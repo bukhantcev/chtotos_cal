@@ -1,10 +1,13 @@
 import pprint
 import pprint
+
+from aiogram import Dispatcher
+
 from google_cal import GoogleCalendar
 from aiogram.types import Message, CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton, InputFile
 from keyboards_cal import cal_kb, create_day_table, kb_creat_event
 from db_config import add_new_procedura, find_procedura, delete_procedura
-from keyboards import kb_mainmenu
+from keyboards import kb_mainmenu, kb_stop
 from loader import dp, bot
 from text_welcome import text_welcome
 from text_obomne import text_obomne
@@ -23,6 +26,7 @@ async def obomne(cb: CallbackQuery):
     await cb.answer('👌')
     id = cb.from_user.id
     await bot.send_message(chat_id=id, text= text_obomne, reply_markup= kb_mainmenu)
+    await bot.delete_message(chat_id=cb.from_user.id, message_id=cb.message.message_id)
 
 #ПУНКТ МЕНЮ УСЛУГИ
 @dp.callback_query_handler(text='uslugi')
@@ -35,6 +39,7 @@ async def uslugi(cb: CallbackQuery):
     kb_uslugi = InlineKeyboardMarkup(inline_keyboard=list_button_uslugi)
     id = cb.from_user.id
     await bot.send_message(chat_id=id, text=text_uslugi, reply_markup=kb_uslugi)
+    await bot.delete_message(chat_id=cb.from_user.id,message_id=cb.message.message_id)
 
 
 
@@ -51,29 +56,34 @@ async def back_uslugi(cb: CallbackQuery):
     kb_uslugi = InlineKeyboardMarkup(inline_keyboard=list_button_uslugi)
     id = cb.from_user.id
     await bot.send_message(chat_id=id, text=text_uslugi, reply_markup=kb_uslugi)
+    await bot.delete_message(chat_id=cb.from_user.id, message_id=cb.message.message_id)
 
 
 @dp.callback_query_handler(text='zapis', state=None)
 async def zapros_phone(cb: CallbackQuery):
     await bot.send_message(chat_id=cb.from_user.id, text='Для связи с Вами мне потребуется номер Вашего телефона. Отправьте его, пожалуйста, в ответном сообщении.')
     await cb.answer('👌')
-    new_data = ('in_work', cb.from_user.id)
-    update_klient(new_data, 'status_recording')
-    connect.commit()
     await NewItem.phone.set()
+    await bot.delete_message(chat_id=cb.from_user.id, message_id=cb.message.message_id)
 
 @dp.message_handler(state=NewItem.phone)
 async def phone_catch(message: Message, state: FSMContext):
-    await state.update_data({'phone':message.text})
-    data = await state.get_data()
-    new_data = (data.get('phone'), message.from_user.id)
-    update_klient(new_data, 'phone')
-    if find_name_procedure((message.from_user.id,)) != []:
-        name_procedura = find_name_procedure((message.from_user.id,))[0][0]
-        new_data1 = (name_procedura, message.from_user.id)
-        update_klient(new_data1, 'procedure')
-    await message.answer('Я работаю по будням с 15:30 до 21:00, сб - вс с 11:00 до 19:00. На какую даты Вы хотите записаться?')
-    await NewItem.date.set()
+    content = message.text
+    if (len(content) == 12 and content[0] == '+' and content[1] == '7' and str(content[1:]).isdigit()) or (len(content) == 11 and content[0] == '8' and content.isdigit()):
+        await state.update_data({'phone':message.text})
+        data = await state.get_data()
+        new_data = (data.get('phone'), message.from_user.id)
+        update_klient(new_data, 'phone')
+        connect.commit()
+        if find_name_procedure((message.from_user.id,)) != []:
+            name_procedura = find_name_procedure((message.from_user.id,))[0][0]
+            new_data1 = (name_procedura, message.from_user.id)
+            update_klient(new_data1, 'procedure')
+            connect.commit()
+        await message.answer('Я работаю по будням с 15:30 до 21:00, сб - вс с 11:00 до 19:00. На какую дату Вы хотите записаться?')
+        await NewItem.date.set()
+    else:
+        await message.answer('Номер должен начинаться на +7 или 8 и содержать 11 цифр!')
 
 
 
@@ -97,7 +107,11 @@ async def phone_catch(message: Message, state: FSMContext):
 @dp.callback_query_handler(text='event_no')
 async def otkaz(cb: CallbackQuery):
     await cb.answer('Запись отменена!!!')
-    await bot.edit_message_reply_markup(chat_id=cb.from_user.id, message_id=cb.message.message_id, reply_markup=None)
+    await bot.delete_message(chat_id=cb.from_user.id, message_id=cb.message.message_id)
+    info = cursor.execute('SELECT * FROM klients WHERE status_recording="in_work"').fetchall()
+    new_data = ('otmena', info[0][0])
+    update_klient(new_data, 'status_recording')
+    connect.commit()
 
 
 @dp.callback_query_handler(text='event_yes', state=None)
@@ -106,6 +120,11 @@ async def calendar(cb: CallbackQuery):
         await cb.answer('👌')
         await bot.send_message(chat_id=cb.from_user.id, text='Выбери месяц:', reply_markup=cal_kb)
         await CalendarBt.month.set()
+        await bot.edit_message_reply_markup(chat_id=cb.from_user.id, message_id=cb.message.message_id,
+                                            reply_markup=None)
+        new_data = ('in_work', cb.from_user.id)
+        update_klient(new_data, 'status_recording')
+        connect.commit()
 
 
 
@@ -116,10 +135,11 @@ async def calendar_month(cb: CallbackQuery, state: FSMContext):
     data = await state.get_data()
     print(data.get('month'))
     days_bt_text = create_day_table(int(data.get('month').split('-')[1]))
-    days_kb = InlineKeyboardMarkup(row_width=7)
-    days_kb = InlineKeyboardMarkup(inline_keyboard=days_bt_text)
-    await bot.send_message(chat_id=cb.from_user.id, text=f'Выбран месяц: {data.get("month")}\nВыбери число:', reply_markup=days_kb)
+    days_kb = InlineKeyboardMarkup(row_width=7, inline_keyboard=days_bt_text)
+    await bot.send_message(chat_id=cb.from_user.id, text=f'Выбран месяц: {data.get("month").split("-")[1]}-{data.get("month").split("-")[0]}'
+                                                         f'\nВыбери число:', reply_markup=days_kb)
     await CalendarBt.day.set()
+    await bot.delete_message(chat_id=cb.from_user.id, message_id=cb.message.message_id)
 
 
 @dp.callback_query_handler(state=CalendarBt.day)
@@ -128,18 +148,26 @@ async def calendar_month(cb: CallbackQuery, state: FSMContext):
     await cb.answer('👌')
     data = await state.get_data()
     print(data.get('day'))
-    await bot.send_message(chat_id=cb.from_user.id, text=f'Выбрана дата: {data.get("month")}-{data.get("day")}\nВведи время:')
+    await bot.send_message(chat_id=cb.from_user.id, text=f'Выбрана дата: {data.get("day")}-{data.get("month").split("-")[1]}-{data.get("month").split("-")[0]}'
+                                                         f'\nВведи время:')
     await CalendarBt.time.set()
+    await bot.delete_message(chat_id=cb.from_user.id, message_id=cb.message.message_id)
 
 
 @dp.message_handler(state=CalendarBt.time)
 async def calendar_month(message: Message, state: FSMContext):
-    await state.update_data({'time': message.text})
-    data = await state.get_data()
-    print(data.get('time'))
-    await message.answer(text=f'Выбрана дата: {data.get("month")}-{data.get("day")}\nВремя: {data.get("time")}\nСоздать запись?',
-                         reply_markup=kb_creat_event)
-    await CalendarBt.final.set()
+    content = str(message.text)
+    if len(content) == 5 and content[2] == ':' and content.split(':')[0].isdigit() and 0 <= int(content.split(':')[0]) <=23 and content.split(':')[1].isdigit() and 0 <= int(content.split(':')[1]) <=59:
+
+        await state.update_data({'time': message.text})
+        data = await state.get_data()
+        print(data.get('time'))
+        await message.answer(text=f'Выбрана дата: {data.get("day")}-{data.get("month").split("-")[1]}-{data.get("month").split("-")[0]}\nВремя: {data.get("time")}\nСоздать запись?',
+                             reply_markup=kb_creat_event)
+        await CalendarBt.final.set()
+        await bot.delete_message(chat_id=message.from_user.id, message_id=message.message_id)
+    else:
+        await message.answer('Необходимо ввести время в формате чч:мм!')
 
 #Dobavlenie zapisi v calendar
 @dp.callback_query_handler(state=CalendarBt.final)
@@ -151,6 +179,10 @@ async def calendar_month(cb: CallbackQuery, state: FSMContext):
         await bot.send_message(chat_id=cb.from_user.id, text='Запись отменена!!!')
         await state.finish()
         await cb.answer('👌')
+        info = cursor.execute('SELECT * FROM klients WHERE status_recording="in_work"').fetchall()
+        new_data = ('otmena', info[0][0])
+        update_klient(new_data, 'status_recording')
+        connect.commit()
     else:
         info = cursor.execute('SELECT * FROM klients WHERE status_recording="in_work"').fetchall()
         summary = f'{info[0][1]} {info[0][2]}'
@@ -179,13 +211,15 @@ async def calendar_month(cb: CallbackQuery, state: FSMContext):
 
         await bot.edit_message_reply_markup(chat_id=cb.from_user.id, message_id=cb.message.message_id, reply_markup=None)
         await bot.edit_message_text(chat_id=cb.from_user.id, message_id=cb.message.message_id,
-                                            text=f'Выбрана дата: {data.get("month")}-{data.get("day")}\nВремя: {data.get("time")}\nЗапись добавлена в календарь!')
+                                            text=f'Выбрана дата: {data.get("day")}-{data.get("month").split("-")[1]}-{data.get("month").split("-")[0]}'
+                                                 f'\nВремя: {data.get("time")}\nЗапись добавлена в календарь!')
 
         await bot.send_message(chat_id=cb.from_user.id, text=f'Вы записаны на {data.get("day")}-{data.get("month").split("-")[1]}'
                                                              f'-{data.get("month").split("-")[0]}\n🕒: {data.get("time")}\n'
                                                              f'Наш адрес и телефон Вы можете найти в разделе Контакты. Будем рады видеть Вас! ')
         new_data = ('active', info[0][0])
         update_klient(new_data, 'status_recording')
+        connect.commit()
 
 
         await state.finish()
@@ -205,10 +239,14 @@ async def print_commands(cb: CallbackQuery):
         procedure = (find_procedura((proceduri_id,))[0][1])
         new_data = (procedure, cb.from_user.id)
         update_klient(new_data, 'last_procedure')
+        connect.commit()
+        await bot.delete_message(chat_id=cb.from_user.id, message_id=cb.message.message_id)
 
-@dp.message_handler(commands=['test'])
+'''@dp.message_handler(commands=['test'])
 async def test(m: Message):
     cursor.execute('SELECT * FROM klients WHERE status_recording="in_work"')
+    await m.answer('yfytfytfyt', reply_markup=kb_stop)'''
+
 
 
 

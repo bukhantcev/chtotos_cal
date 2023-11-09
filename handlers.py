@@ -1,3 +1,5 @@
+from aiogram import Dispatcher
+from aiogram.dispatcher import FSMContext
 from aiogram.types import Message, CallbackQuery
 
 from keyboards_cal import cal_kb
@@ -28,8 +30,16 @@ async def start(message: Message):
 
 
 
-@dp.message_handler(commands=['main_menu'])
-async def info(message: Message):
+@dp.message_handler(commands=['main_menu'], state='*')
+async def info(message: Message, state: FSMContext):
+    await state.finish()
     await message.answer(text='-------------ГЛАВНОЕ МЕНЮ-------------', reply_markup=kb_mainmenu)
     new_data = (None, message.from_user.id)
     update_klient(new_data, 'last_procedure')
+    try:
+        info = cursor.execute('SELECT * FROM klients WHERE status_recording="in_work"').fetchall()
+        new_data = ('otmena', info[0][0])
+        update_klient(new_data, 'status_recording')
+    except:
+        print('ok')
+

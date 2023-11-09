@@ -1,4 +1,4 @@
-from aiogram.types import KeyboardButton, InlineKeyboardButton, ReplyKeyboardMarkup, InlineKeyboardMarkup
+from aiogram.types import KeyboardButton, InlineKeyboardButton, ReplyKeyboardMarkup, InlineKeyboardMarkup, KeyboardButtonRequestUser
 
 
 #Обычные кнопки:
@@ -20,9 +20,12 @@ kb_mainmenu = InlineKeyboardMarkup(inline_keyboard=list_buttonmenu)
 
 bt_back_to_uslugi = InlineKeyboardButton(text='--Вернуться к услугам--', callback_data='back_uslugi')
 bt_zapis = InlineKeyboardButton(text='--Записаться--', callback_data='zapis')
-kb_back_to_uslugi = InlineKeyboardMarkup(row_width=1)
+kb_back_to_uslugi = InlineKeyboardMarkup(row_width=1,)
 
 kb_back_to_uslugi.row(bt_zapis)
 kb_back_to_uslugi.row(bt_back_to_uslugi)
+
+bt_stop = KeyboardButton(text='Отменить и выйти')
+kb_stop = ReplyKeyboardMarkup([[bt_stop]], resize_keyboard=True)
 
 
