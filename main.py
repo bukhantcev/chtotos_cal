@@ -1,0 +1,43 @@
+from aiogram.types import Message
+from aiogram.utils import executor
+from db_config import create_table, create_table_klients
+from loader import bot, dp
+from handlers import dp
+from cb_handlers import dp
+from admin import dp
+from fill_db_proceduri import fill_db
+from FM_handlers import  dp
+
+
+
+async def on_start(_):
+    try:
+        create_table()
+        fill_db()
+        create_table_klients()
+
+        print('DB connection... OK')
+    except:
+        print('DB connection... Failure!!!')
+    print('Бот запущен!')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+executor.start_polling(dp, skip_updates=True, on_startup=on_start)
+

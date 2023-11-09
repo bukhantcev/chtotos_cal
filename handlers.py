@@ -1,0 +1,35 @@
+from aiogram.types import Message, CallbackQuery
+
+from keyboards_cal import cal_kb
+from db_config import add_new_procedura, find_procedura, delete_procedura, add_new_klient, update_klient, connect, cursor
+from keyboards import kb_mainmenu
+from klients import Klients
+from loader import dp
+from text_welcome import text_welcome
+from text_obomne import text_obomne
+
+
+
+@dp.message_handler(commands=['start'])
+async def start(message: Message):
+    await message.answer(text_welcome, reply_markup=kb_mainmenu)
+    klient = Klients(tg_id=message.from_user.id, first_name=message.from_user.first_name, last_name=message.from_user.last_name,
+                     tg_username=message.from_user.username)
+    tg_id = klient.tg_id
+    first_name = klient.first_name
+    last_name = klient.last_name
+    tg_username = klient.tg_username
+    new_klient = (tg_id, first_name, last_name, tg_username)
+    add_new_klient(new_klient)
+    print(message.from_user.id)
+
+
+
+
+
+
+@dp.message_handler(commands=['main_menu'])
+async def info(message: Message):
+    await message.answer(text='-------------ГЛАВНОЕ МЕНЮ-------------', reply_markup=kb_mainmenu)
+    new_data = (None, message.from_user.id)
+    update_klient(new_data, 'last_procedure')
