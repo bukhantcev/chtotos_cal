@@ -25,7 +25,7 @@ class GoogleCalendar:
 
 
 obj = GoogleCalendar()
-pprint.pprint(obj.get_calendar_list())
+#pprint.pprint(obj.get_calendar_list())
 
 calendar_id = 'bukhantcev@gmail.com'
 
@@ -42,4 +42,6 @@ while True:
 
 
 
+#pprint.pprint(obj.get_calendar_list())
+#obj.add_calendar(calendar_id='1dbae5a038d3414d565f0e8ba342c1fa018ceb2d3d5bd0245ec6f610b978a446@group.calendar.google.com')
 #pprint.pprint(obj.get_calendar_list())

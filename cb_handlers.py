@@ -162,7 +162,7 @@ async def calendar_month(cb: CallbackQuery, state: FSMContext):
         obj = GoogleCalendar()
         pprint.pprint(obj.get_calendar_list())
 
-        calendar_id = 'bukhantcev@gmail.com'
+        calendar_id = '1dbae5a038d3414d565f0e8ba342c1fa018ceb2d3d5bd0245ec6f610b978a446@group.calendar.google.com'
 
         event = {
             'summary': summary,
@@ -181,6 +181,13 @@ async def calendar_month(cb: CallbackQuery, state: FSMContext):
         await bot.edit_message_text(chat_id=cb.from_user.id, message_id=cb.message.message_id,
                                             text=f'Выбрана дата: {data.get("month")}-{data.get("day")}\nВремя: {data.get("time")}\nЗапись добавлена в календарь!')
 
+        await bot.send_message(chat_id=cb.from_user.id, text=f'Вы записаны на {data.get("day")}-{data.get("month").split("-")[1]}'
+                                                             f'-{data.get("month").split("-")[0]}\n🕒: {data.get("time")}\n'
+                                                             f'Наш адрес и телефон Вы можете найти в разделе Контакты. Будем рады видеть Вас! ')
+        new_data = ('active', info[0][0])
+        update_klient(new_data, 'status_recording')
+
+
         await state.finish()
         await cb.answer('👌')
 
@@ -188,15 +195,16 @@ async def calendar_month(cb: CallbackQuery, state: FSMContext):
 @dp.callback_query_handler()
 async def print_commands(cb: CallbackQuery):
     command = cb.data
-    proceduri_id = find_idproceduri((command,))[0][0]
-    descr = f'{find_procedura((proceduri_id,))[0][5]}\n\n🕒 {find_procedura((proceduri_id,))[0][2]}\n\n💰 {find_procedura((proceduri_id,))[0][3]}'
-    photo = InputFile(f'foto_proceduri/{proceduri_id}.jpg')
+    if command.split('_')[0] == 'ukol':
+        proceduri_id = find_idproceduri((command,))[0][0]
+        descr = f'{find_procedura((proceduri_id,))[0][5]}\n\n🕒 {find_procedura((proceduri_id,))[0][2]}\n\n💰 {find_procedura((proceduri_id,))[0][3]}'
+        photo = InputFile(f'foto_proceduri/{proceduri_id}.jpg')
 
-    await bot.send_photo(chat_id=cb.message.chat.id, photo=photo, caption=descr, reply_markup=kb_back_to_uslugi)
-    await cb.answer('👌')
-    procedure = (find_procedura((proceduri_id,))[0][1])
-    new_data = (procedure, cb.from_user.id)
-    update_klient(new_data, 'last_procedure')
+        await bot.send_photo(chat_id=cb.message.chat.id, photo=photo, caption=descr, reply_markup=kb_back_to_uslugi)
+        await cb.answer('👌')
+        procedure = (find_procedura((proceduri_id,))[0][1])
+        new_data = (procedure, cb.from_user.id)
+        update_klient(new_data, 'last_procedure')
 
 @dp.message_handler(commands=['test'])
 async def test(m: Message):
