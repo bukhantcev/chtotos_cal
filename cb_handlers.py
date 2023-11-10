@@ -19,6 +19,7 @@ from klients import Klients
 from master_id import master_id
 from keyboards import contact_keyboard
 from aiogram import types
+from digits import  digits
 
 
 #ПУНКТ МЕНЮ ОБО МНЕ
@@ -102,9 +103,9 @@ async def phone_catch(message: Message, state: FSMContext):
     await message.answer(text='Если эти дата и время свободны, Вам придет уведомление, в противном случае я свяжусь с вами для уточнения деталлей записи.')
     await bot.send_contact(chat_id=master_id, first_name=vizitka.get('phone').first_name, vcard=vizitka.get('phone').vcard, phone_number=vizitka.get('phone').phone_number)
     await bot.send_message(chat_id=master_id, text=f'Клиент {message.from_user.full_name} хочет записаться '
-                                                   f'на процедуру:\n{name_proc}\n\nПредпочтительная дата записи:'
-                                                   f'\n{data.get("date")} \n\nid: {us_name}\n'
-                                                   f'\nТелефон: +{vizitka.get("phone").phone_number}', reply_markup=kb_creat_event)
+                                                   f'на процедуру:\n{name_proc}.\n\nПредпочтительная дата записи:'
+                                                   f'\n{data.get("date")}. \n\nusername: {us_name}.\n'
+                                                   f'\nТелефон: +{vizitka.get("phone").phone_number}.\n\n id клиента: {message.from_user.id}', reply_markup=kb_creat_event)
     await state.finish()
 
 
@@ -113,7 +114,7 @@ async def otkaz(cb: CallbackQuery):
     await cb.answer('Запись отменена!!!')
     await bot.delete_message(chat_id=cb.from_user.id, message_id=cb.message.message_id)
     info = cursor.execute('SELECT * FROM klients WHERE status_recording="in_work"').fetchall()
-    new_data = ('otmena', info[0][0])
+    new_data = ('otmena', digits(cb.message.text.split('.')[4]))
     update_klient(new_data, 'status_recording')
     connect.commit()
 
@@ -161,6 +162,7 @@ async def calendar_month(cb: CallbackQuery, state: FSMContext):
 @dp.message_handler(state=CalendarBt.time)
 async def calendar_month(message: Message, state: FSMContext):
     content = str(message.text)
+
     if len(content) == 5 and content[2] == ':' and content.split(':')[0].isdigit() and 0 <= int(content.split(':')[0]) <=23 and content.split(':')[1].isdigit() and 0 <= int(content.split(':')[1]) <=59:
 
         await state.update_data({'time': message.text})
