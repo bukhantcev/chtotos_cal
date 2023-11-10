@@ -99,7 +99,7 @@ async def phone_catch(message: Message, state: FSMContext):
         name_proc = 'Не выбрано'
     us_name = 'Нет' if message.from_user.username == None else f'@{message.from_user.username}'
     vizitka = await state.get_data('phone')
-    print(vizitka.get('phone'))
+    await message.answer(text='Если эти дата и время свободны, Вам придет уведомление, в противном случае я свяжусь с вами для уточнения деталлей записи.')
     await bot.send_contact(chat_id=master_id, first_name=vizitka.get('phone').first_name, vcard=vizitka.get('phone').vcard, phone_number=vizitka.get('phone').phone_number)
     await bot.send_message(chat_id=master_id, text=f'Клиент {message.from_user.full_name} хочет записаться '
                                                    f'на процедуру:\n{name_proc}\n\nПредпочтительная дата записи:'
