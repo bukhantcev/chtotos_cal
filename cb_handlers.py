@@ -1,10 +1,9 @@
 import pprint
 import pprint
-
 from aiogram import Dispatcher
-
 from google_cal import GoogleCalendar
-from aiogram.types import Message, CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton, InputFile
+from aiogram.types import Message, CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton, InputFile, ContentType, \
+    ReplyKeyboardRemove, ReplyKeyboardMarkup, KeyboardButton, Contact
 from keyboards_cal import cal_kb, create_day_table, kb_creat_event
 from db_config import add_new_procedura, find_procedura, delete_procedura
 from keyboards import kb_mainmenu, kb_stop
@@ -18,6 +17,8 @@ from fsm import  NewItem, CalendarBt
 from aiogram.dispatcher import  FSMContext
 from klients import Klients
 from master_id import master_id
+from keyboards import contact_keyboard
+from aiogram import types
 
 
 #ПУНКТ МЕНЮ ОБО МНЕ
@@ -61,29 +62,29 @@ async def back_uslugi(cb: CallbackQuery):
 
 @dp.callback_query_handler(text='zapis', state=None)
 async def zapros_phone(cb: CallbackQuery):
-    await bot.send_message(chat_id=cb.from_user.id, text='Для связи с Вами мне потребуется номер Вашего телефона. Отправьте его, пожалуйста, в ответном сообщении.')
+    await bot.send_message(chat_id=cb.from_user.id, text='Для связи с Вами мне потребуется номер Вашего '
+                                                         'телефона. Чтобы поделиться контактом, нажмите кнопку ниже ⬇️.',
+                           reply_markup=await contact_keyboard())
     await cb.answer('👌')
     await NewItem.phone.set()
     await bot.delete_message(chat_id=cb.from_user.id, message_id=cb.message.message_id)
 
-@dp.message_handler(state=NewItem.phone)
+@dp.message_handler(state=NewItem.phone, content_types=types.ContentType.CONTACT)
 async def phone_catch(message: Message, state: FSMContext):
-    content = message.text
-    if (len(content) == 12 and content[0] == '+' and content[1] == '7' and str(content[1:]).isdigit()) or (len(content) == 11 and content[0] == '8' and content.isdigit()):
-        await state.update_data({'phone':message.text})
-        data = await state.get_data()
-        new_data = (data.get('phone'), message.from_user.id)
-        update_klient(new_data, 'phone')
+    contact = message.contact
+
+    await state.update_data({'phone':contact})
+    data = await state.get_data()
+    new_data = (contact.phone_number, message.from_user.id)
+    update_klient(new_data, 'phone')
+    connect.commit()
+    if find_name_procedure((message.from_user.id,)) != []:
+        name_procedura = find_name_procedure((message.from_user.id,))[0][0]
+        new_data1 = (name_procedura, message.from_user.id)
+        update_klient(new_data1, 'procedure')
         connect.commit()
-        if find_name_procedure((message.from_user.id,)) != []:
-            name_procedura = find_name_procedure((message.from_user.id,))[0][0]
-            new_data1 = (name_procedura, message.from_user.id)
-            update_klient(new_data1, 'procedure')
-            connect.commit()
-        await message.answer('Я работаю по будням с 15:30 до 21:00, сб - вс с 11:00 до 19:00. На какую дату Вы хотите записаться?')
-        await NewItem.date.set()
-    else:
-        await message.answer('Номер должен начинаться на +7 или 8 и содержать 11 цифр!')
+    await message.answer('Я работаю по будням с 15:30 до 21:00, сб - вс с 11:00 до 19:00. На какую дату Вы хотите записаться?',reply_markup=ReplyKeyboardRemove())
+    await NewItem.date.set()
 
 
 
@@ -97,10 +98,13 @@ async def phone_catch(message: Message, state: FSMContext):
     else:
         name_proc = 'Не выбрано'
     us_name = 'Нет' if message.from_user.username == None else f'@{message.from_user.username}'
+    vizitka = await state.get_data('phone')
+    print(vizitka.get('phone'))
+    await bot.send_contact(chat_id=master_id, first_name=vizitka.get('phone').first_name, vcard=vizitka.get('phone').vcard, phone_number=vizitka.get('phone').phone_number)
     await bot.send_message(chat_id=master_id, text=f'Клиент {message.from_user.full_name} хочет записаться '
                                                    f'на процедуру:\n{name_proc}\n\nПредпочтительная дата записи:'
                                                    f'\n{data.get("date")} \n\nid: {us_name}\n'
-                                                   f'\nТелефон: {data.get("phone")}', reply_markup=kb_creat_event)
+                                                   f'\nТелефон: +{vizitka.get("phone").phone_number}', reply_markup=kb_creat_event)
     await state.finish()
 
 
@@ -187,7 +191,7 @@ async def calendar_month(cb: CallbackQuery, state: FSMContext):
         info = cursor.execute('SELECT * FROM klients WHERE status_recording="in_work"').fetchall()
         summary = f'{info[0][1]} {info[0][2]}'
         description = f'Процедура: {info[0][4]}\n\nTG_id: {info[0][3]}\n\nТелефон: ' \
-                      f'{info[0][8]}'f'\n\nid клиента: {info[0][0]}'
+                      f'+{info[0][8]}'f'\n\nid клиента: {info[0][0]}'
         dateTime_start = f'{data.get("month")}-{data.get("day")}T{data.get("time")}:00+03:00'
         dateTime_end = f'{data.get("month")}-{data.get("day")}T{data.get("time")}:00+03:00'
 
@@ -242,11 +246,26 @@ async def print_commands(cb: CallbackQuery):
         connect.commit()
         await bot.delete_message(chat_id=cb.from_user.id, message_id=cb.message.message_id)
 
-'''@dp.message_handler(commands=['test'])
-async def test(m: Message):
-    cursor.execute('SELECT * FROM klients WHERE status_recording="in_work"')
-    await m.answer('yfytfytfyt', reply_markup=kb_stop)'''
+'''async def contact_keyboard():
+    markup = ReplyKeyboardMarkup(resize_keyboard=True)
+    first_button = KeyboardButton(text=("📱 Отправить"), request_contact=True)
+    markup.add(first_button)
+    return markup
 
+
+# handlers.py
+@dp.message_handler(commands=("contact"))
+async def share_number(message: Message):
+    await message.answer("Нажмите на кнопку ниже, чтобы отправить контакт", reply_markup=await contact_keyboard())
+
+@dp.message_handler(content_types=ContentType.CONTACT)
+async def get_contact(message: Message):
+    contact = message.contact
+    await bot.send_contact(chat_id=master_id, vcard=contact, phone_number=contact.phone_number, first_name=contact.first_name)
+    await message.answer(f"Спасибо, {contact.full_name}.\n"
+                         f"Ваш номер {contact.phone_number} был получен",
+                         reply_markup=ReplyKeyboardRemove())
+'''
 
 
 

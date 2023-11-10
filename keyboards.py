@@ -28,4 +28,10 @@ kb_back_to_uslugi.row(bt_back_to_uslugi)
 bt_stop = KeyboardButton(text='Отменить и выйти')
 kb_stop = ReplyKeyboardMarkup([[bt_stop]], resize_keyboard=True)
 
+async def contact_keyboard():
+    markup = ReplyKeyboardMarkup(resize_keyboard=True)
+    first_button = KeyboardButton(text=("📱 Отправить"), request_contact=True)
+    markup.add(first_button)
+    return markup
+
 
