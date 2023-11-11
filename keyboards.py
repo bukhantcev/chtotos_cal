@@ -30,8 +30,16 @@ kb_stop = ReplyKeyboardMarkup([[bt_stop]], resize_keyboard=True)
 
 async def contact_keyboard():
     markup = ReplyKeyboardMarkup(resize_keyboard=True)
-    first_button = KeyboardButton(text=("📱 Отправить"), request_contact=True)
+    first_button = KeyboardButton(text=("📱 Отправить номер телефона"), request_contact=True)
     markup.add(first_button)
     return markup
+
+
+sert_bt = InlineKeyboardButton(text='Посмотреть сертификаты', callback_data='view_sertificates')
+back_to_main_menu = InlineKeyboardButton(text='Вернуться в главное меню', callback_data='back_to_main_menu')
+sert_kb = InlineKeyboardMarkup(row_width=1)
+sert_kb.row(sert_bt)
+sert_kb.row(back_to_main_menu)
+
 
 

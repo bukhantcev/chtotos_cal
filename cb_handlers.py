@@ -1,6 +1,8 @@
 import pprint
 import pprint
 from aiogram import Dispatcher
+
+from delete_dot import delete_dot
 from google_cal import GoogleCalendar
 from aiogram.types import Message, CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton, InputFile, ContentType, \
     ReplyKeyboardRemove, ReplyKeyboardMarkup, KeyboardButton, Contact
@@ -10,7 +12,7 @@ from keyboards import kb_mainmenu, kb_stop
 from loader import dp, bot
 from text_welcome import text_welcome
 from text_obomne import text_obomne
-from keyboards import kb_mainmenu, kb_back_to_uslugi
+from keyboards import kb_mainmenu, kb_back_to_uslugi, sert_kb
 from text_uslugi import text_uslugi
 from db_config import cursor, find_idproceduri, find_procedura, connect, add_new_klient, update_klient, find_name_procedure
 from fsm import  NewItem, CalendarBt
@@ -20,6 +22,7 @@ from master_id import master_id
 from keyboards import contact_keyboard
 from aiogram import types
 from digits import  digits
+from sertificat_list import sertificat_list
 
 
 #ПУНКТ МЕНЮ ОБО МНЕ
@@ -27,7 +30,7 @@ from digits import  digits
 async def obomne(cb: CallbackQuery):
     await cb.answer('👌')
     id = cb.from_user.id
-    await bot.send_message(chat_id=id, text= text_obomne, reply_markup= kb_mainmenu)
+    await bot.send_message(chat_id=id, text= text_obomne, reply_markup= sert_kb)
     await bot.delete_message(chat_id=cb.from_user.id, message_id=cb.message.message_id)
 
 #ПУНКТ МЕНЮ УСЛУГИ
@@ -91,7 +94,7 @@ async def phone_catch(message: Message, state: FSMContext):
 
 @dp.message_handler(state=NewItem.date)
 async def phone_catch(message: Message, state: FSMContext):
-    await state.update_data({'date':message.text})
+    await state.update_data({'date':delete_dot(message.text)})
     data = await state.get_data()
     name_procedura = find_name_procedure((message.from_user.id,))
     if name_procedura != []:
@@ -127,7 +130,8 @@ async def calendar(cb: CallbackQuery):
         await CalendarBt.month.set()
         await bot.edit_message_reply_markup(chat_id=cb.from_user.id, message_id=cb.message.message_id,
                                             reply_markup=None)
-        new_data = ('in_work', cb.from_user.id)
+        print(digits(cb.message.text.split('.')[4]))
+        new_data = ('in_work', digits(cb.message.text.split('.')[4]))
         update_klient(new_data, 'status_recording')
         connect.commit()
 
@@ -190,9 +194,14 @@ async def calendar_month(cb: CallbackQuery, state: FSMContext):
         update_klient(new_data, 'status_recording')
         connect.commit()
     else:
+
         info = cursor.execute('SELECT * FROM klients WHERE status_recording="in_work"').fetchall()
-        summary = f'{info[0][1]} {info[0][2]}'
-        description = f'Процедура: {info[0][4]}\n\nTG_id: {info[0][3]}\n\nТелефон: ' \
+        first_name = info[0][1]
+        last_name = info[0][2] if info[0][2] != None else ''
+        procedura = info[0][4] if info[0][4] != None else 'не выбрана'
+        tg_id = info[0][3] if info[0][3] != None else 'нет'
+        summary = f'{first_name} {last_name}'
+        description = f'Процедура: {procedura}\n\nTG_id: {tg_id}\n\nТелефон: ' \
                       f'+{info[0][8]}'f'\n\nid клиента: {info[0][0]}'
         dateTime_start = f'{data.get("month")}-{data.get("day")}T{data.get("time")}:00+03:00'
         dateTime_end = f'{data.get("month")}-{data.get("day")}T{data.get("time")}:00+03:00'
@@ -230,6 +239,25 @@ async def calendar_month(cb: CallbackQuery, state: FSMContext):
 
         await state.finish()
         await cb.answer('👌')
+
+
+
+@dp.callback_query_handler(text='back_to_main_menu')
+async def info(cb: CallbackQuery):
+    await bot.edit_message_text(text='-------------ГЛАВНОЕ МЕНЮ-------------', chat_id=cb.from_user.id, message_id=cb.message.message_id, reply_markup=kb_mainmenu)
+
+@dp.callback_query_handler(text='view_sertificates')
+async def view_sertificate(cb: CallbackQuery):
+    for i in range(len(sertificat_list)):
+        path = f'sertificat_file/sert_{i+1}.jpg'
+        file = InputFile(path)
+        if i == len(sertificat_list)-1:
+            await bot.send_photo(chat_id=cb.from_user.id, photo=file, reply_markup=kb_mainmenu)
+        else:
+            await bot.send_photo(chat_id=cb.from_user.id, photo=file)
+
+
+
 
 
 @dp.callback_query_handler()
