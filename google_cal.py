@@ -23,6 +23,9 @@ class GoogleCalendar:
     def add_event(self, calendar_id, body):
         return self.service.events().insert(calendarId=calendar_id, body=body).execute()
 
+    def delete_event(self, calendar_id, event_id):
+        return self.service.events().delete(calendarId=calendar_id, eventId=event_id).execute()
+
 
 obj = GoogleCalendar()
 #pprint.pprint(obj.get_calendar_list())

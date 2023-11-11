@@ -207,7 +207,6 @@ async def calendar_month(cb: CallbackQuery, state: FSMContext):
         dateTime_end = f'{data.get("month")}-{data.get("day")}T{data.get("time")}:00+03:00'
 
         obj = GoogleCalendar()
-        pprint.pprint(obj.get_calendar_list())
 
         calendar_id = '1dbae5a038d3414d565f0e8ba342c1fa018ceb2d3d5bd0245ec6f610b978a446@group.calendar.google.com'
 
@@ -223,6 +222,7 @@ async def calendar_month(cb: CallbackQuery, state: FSMContext):
             }
         }
         event = obj.add_event(calendar_id=calendar_id, body=event)
+        print(event.get('id'))
 
         await bot.edit_message_reply_markup(chat_id=cb.from_user.id, message_id=cb.message.message_id, reply_markup=None)
         await bot.edit_message_text(chat_id=cb.from_user.id, message_id=cb.message.message_id,
