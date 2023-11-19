@@ -39,15 +39,10 @@ async def start(message: Message):
 async def info(message: Message, state: FSMContext):
     await state.finish()
 
-    message_count = 0
-    async for message in bot.iter_history(message.chat.id):
-        try:
-            await bot.delete_message(message.chat.id, message.message_id)
-            message_count += 1
-        except exceptions.MessageCantBeDeleted:
-            pass
 
     await message.answer(text='-------------ГЛАВНОЕ МЕНЮ-------------', reply_markup=kb_mainmenu)
+
+    await bot.delete_messages(message.chat.id, range(1, message.message_id))
     new_data = (None, message.from_user.id)
     update_klient(new_data, 'last_procedure')
     try:
