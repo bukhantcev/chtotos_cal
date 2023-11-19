@@ -1,12 +1,13 @@
 from aiogram import Dispatcher
 from aiogram.dispatcher import FSMContext
 from aiogram.types import Message, CallbackQuery
+from aiogram.utils import exceptions
 
 from keyboards_cal import cal_kb
 from db_config import add_new_procedura, find_procedura, delete_procedura, add_new_klient, update_klient, connect, cursor
 from keyboards import kb_mainmenu
 from klients import Klients
-from loader import dp
+from loader import dp, bot
 from text_welcome import text_welcome
 from text_obomne import text_obomne
 
@@ -37,6 +38,15 @@ async def start(message: Message):
 @dp.message_handler(commands=['main_menu'], state='*')
 async def info(message: Message, state: FSMContext):
     await state.finish()
+
+    message_count = 0
+    async for message in bot.iter_history(message.chat.id):
+        try:
+            await bot.delete_message(message.chat.id, message.message_id)
+            message_count += 1
+        except exceptions.MessageCantBeDeleted:
+            pass
+
     await message.answer(text='-------------ГЛАВНОЕ МЕНЮ-------------', reply_markup=kb_mainmenu)
     new_data = (None, message.from_user.id)
     update_klient(new_data, 'last_procedure')
