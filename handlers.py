@@ -24,6 +24,10 @@ async def start(message: Message):
     new_klient = (tg_id, first_name, last_name, tg_username)
     add_new_klient(new_klient)
     print(message.from_user.id)
+    cursor.execute('SELECT * FROM klients')
+    data = cursor.fetchall()
+    for i in range(len(data)):
+        print(data[i])
 
 
 
@@ -42,4 +46,8 @@ async def info(message: Message, state: FSMContext):
         update_klient(new_data, 'status_recording')
     except:
         print('ok')
+
+@dp.message_handler(content_types='photo')
+async def photo(message: Message):
+    print(message)
 

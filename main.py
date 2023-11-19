@@ -1,6 +1,6 @@
 from aiogram.types import Message
 from aiogram.utils import executor
-from db_config import create_table, create_table_klients
+from db_config import create_table, create_table_klients, create_table_photo_sertificate
 from loader import bot, dp
 from handlers import dp
 from cb_handlers import dp
@@ -15,6 +15,7 @@ async def on_start(_):
         create_table()
         fill_db()
         create_table_klients()
+        create_table_photo_sertificate()
 
         print('DB connection... OK')
     except:

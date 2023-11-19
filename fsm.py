@@ -19,3 +19,10 @@ class CalendarBt(StatesGroup):
     final = State()
 
 
+
+class PhotoSertificate(StatesGroup):
+
+    name = State
+    photo_id = State
+
+

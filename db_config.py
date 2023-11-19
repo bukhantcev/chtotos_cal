@@ -14,11 +14,18 @@ def create_table():
      time_minute VARCHAR, price VARCHAR, command VARCHAR, description VARCHAR, foto BLOB)''')
     connect.commit()
 
+# СОЗДАНИЕ ТАБЛИЦЫ КЛИЕНТЫ
 def create_table_klients():
     cursor.execute('''CREATE TABLE IF NOT EXISTS klients (tg_id INTEGER 
     PRIMARY KEY, first_name VARCHAR, last_name VARCHAR, tg_username VARCHAR, last_procedure VARCHAR, 
     date_recording VARCHAR, date_vizit VARCHAR, 
     status_news VARCHAR, phone VARCHAR, procedure VARCHAR, status_recording VARCHAR)''')
+    connect.commit()
+
+# СОЗДАНИЕ ТАБЛИЦЫ ФОТО
+def create_table_photo_sertificate():
+    cursor.execute('''CREATE TABLE IF NOT EXISTS photo_sertificate (id INTEGER 
+    PRIMARY KEY AUTOINCREMENT, name VARCHAR, photo_id VARCHAR)''')
     connect.commit()
 
 # ДОБАВИТЬ РЯДЫ В ПРОЦЕДУРЫ
