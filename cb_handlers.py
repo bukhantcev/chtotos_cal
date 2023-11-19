@@ -194,51 +194,54 @@ async def calendar_month(cb: CallbackQuery, state: FSMContext):
         update_klient(new_data, 'status_recording')
         connect.commit()
     else:
+        try:
 
-        info = cursor.execute('SELECT * FROM klients WHERE status_recording="in_work"').fetchall()
-        first_name = info[0][1]
-        last_name = info[0][2] if info[0][2] != None else ''
-        procedura = info[0][4] if info[0][4] != None else 'не выбрана'
-        tg_id = info[0][3] if info[0][3] != None else 'нет'
-        summary = f'{first_name} {last_name}'
-        description = f'Процедура: {procedura}\n\nTG_id: {tg_id}\n\nТелефон: ' \
-                      f'+{info[0][8]}'f'\n\nid клиента: {info[0][0]}'
-        dateTime_start = f'{data.get("month")}-{data.get("day")}T{data.get("time")}:00+03:00'
-        dateTime_end = f'{data.get("month")}-{data.get("day")}T{data.get("time")}:00+03:00'
+            info = cursor.execute('SELECT * FROM klients WHERE status_recording="in_work"').fetchall()
+            first_name = info[0][1]
+            last_name = info[0][2] if info[0][2] != None else ''
+            procedura = info[0][4] if info[0][4] != None else 'не выбрана'
+            tg_id = info[0][3] if info[0][3] != None else 'нет'
+            summary = f'{first_name} {last_name}'
+            description = f'Процедура: {procedura}\n\nTG_id: {tg_id}\n\nТелефон: ' \
+                          f'+{info[0][8]}'f'\n\nid клиента: {info[0][0]}'
+            dateTime_start = f'{data.get("month")}-{data.get("day")}T{data.get("time")}:00+03:00'
+            dateTime_end = f'{data.get("month")}-{data.get("day")}T{data.get("time")}:00+03:00'
 
-        obj = GoogleCalendar()
+            obj = GoogleCalendar()
 
-        calendar_id = '1dbae5a038d3414d565f0e8ba342c1fa018ceb2d3d5bd0245ec6f610b978a446@group.calendar.google.com'
+            calendar_id = '1dbae5a038d3414d565f0e8ba342c1fa018ceb2d3d5bd0245ec6f610b978a446@group.calendar.google.com'
 
-        event = {
-            'summary': summary,
-            'location': 'RAI BEAUTY SPACE',
-            'description': description,
-            'start': {
-                'dateTime': dateTime_start,
-            },
-            'end': {
-                'dateTime': dateTime_end,
+            event = {
+                'summary': summary,
+                'location': 'RAI BEAUTY SPACE',
+                'description': description,
+                'start': {
+                    'dateTime': dateTime_start,
+                },
+                'end': {
+                    'dateTime': dateTime_end,
+                }
             }
-        }
-        event = obj.add_event(calendar_id=calendar_id, body=event)
-        print(event.get('id'))
+            event = obj.add_event(calendar_id=calendar_id, body=event)
+            print(event.get('id'))
 
-        await bot.edit_message_reply_markup(chat_id=cb.from_user.id, message_id=cb.message.message_id, reply_markup=None)
-        await bot.edit_message_text(chat_id=cb.from_user.id, message_id=cb.message.message_id,
-                                            text=f'Выбрана дата: {data.get("day")}-{data.get("month").split("-")[1]}-{data.get("month").split("-")[0]}'
-                                                 f'\nВремя: {data.get("time")}\nЗапись добавлена в календарь!')
+            await bot.edit_message_reply_markup(chat_id=cb.from_user.id, message_id=cb.message.message_id, reply_markup=None)
+            await bot.edit_message_text(chat_id=cb.from_user.id, message_id=cb.message.message_id,
+                                                text=f'Выбрана дата: {data.get("day")}-{data.get("month").split("-")[1]}-{data.get("month").split("-")[0]}'
+                                                     f'\nВремя: {data.get("time")}\nЗапись добавлена в календарь!')
 
-        await bot.send_message(chat_id=cb.from_user.id, text=f'Вы записаны на {data.get("day")}-{data.get("month").split("-")[1]}'
-                                                             f'-{data.get("month").split("-")[0]}\n🕒: {data.get("time")}\n'
-                                                             f'Наш адрес и телефон Вы можете найти в разделе Контакты. Будем рады видеть Вас! ')
-        new_data = ('active', info[0][0])
-        update_klient(new_data, 'status_recording')
-        connect.commit()
+            await bot.send_message(chat_id=cb.from_user.id, text=f'Вы записаны на {data.get("day")}-{data.get("month").split("-")[1]}'
+                                                                 f'-{data.get("month").split("-")[0]}\n🕒: {data.get("time")}\n'
+                                                                 f'Наш адрес и телефон Вы можете найти в разделе Контакты. Будем рады видеть Вас! ')
+            new_data = ('active', info[0][0])
+            update_klient(new_data, 'status_recording')
+            connect.commit()
 
 
-        await state.finish()
-        await cb.answer('👌')
+            await state.finish()
+            await cb.answer('👌')
+        except:
+            await cb.answer('Что-то пошло не так!!!')
 
 
 
