@@ -261,6 +261,22 @@ async def view_sertificate(cb: CallbackQuery):
 
 
 
+@dp.callback_query_handler(text='raboti')
+async def raboti(cb: CallbackQuery):
+    await cb.answer('...Раздел находится в разработке...')
+
+
+@dp.callback_query_handler(text='otzivi')
+async def otzivi(cb: CallbackQuery):
+    await cb.answer('...Раздел находится в разработке...')
+
+
+@dp.callback_query_handler(text='kontakti')
+async def kontakti(cb: CallbackQuery):
+    await cb.answer('...Раздел находится в разработке...')
+
+
+
 
 
 @dp.callback_query_handler()
