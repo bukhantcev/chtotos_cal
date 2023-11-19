@@ -38,11 +38,17 @@ async def start(message: Message):
 @dp.message_handler(commands=['main_menu'], state='*')
 async def info(message: Message, state: FSMContext):
     await state.finish()
+    try:
+        message_id = message.message_id
+        while True:
+            await bot.delete_message(message.chat.id, message_id)
+            message_id = message_id-1
+    except:
+        pass
 
 
     await message.answer(text='-------------ГЛАВНОЕ МЕНЮ-------------', reply_markup=kb_mainmenu)
 
-    await bot.delete_messages(message.chat.id, range(1, message.message_id))
     new_data = (None, message.from_user.id)
     update_klient(new_data, 'last_procedure')
     try:
