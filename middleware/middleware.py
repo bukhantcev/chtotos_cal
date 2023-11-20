@@ -1,7 +1,7 @@
 from aiogram.types import Message, CallbackQuery
 from aiogram.dispatcher.middlewares import BaseMiddleware
-from chtotos_cal.admin_id import admin_id
 
+from .config  import admin_id
 
 
 class Administrator(BaseMiddleware):
