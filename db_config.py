@@ -22,15 +22,21 @@ def create_table_klients():
     status_news VARCHAR, phone VARCHAR, procedure VARCHAR, status_recording VARCHAR)''')
     connect.commit()
 
-# СОЗДАНИЕ ТАБЛИЦЫ ФОТО
+# СОЗДАНИЕ ТАБЛИЦЫ ФОТО СЕРТИФИКАТЫ
 def create_table_photo_sertificate():
     cursor.execute('''CREATE TABLE IF NOT EXISTS photo_sertificate (id INTEGER 
     PRIMARY KEY AUTOINCREMENT, name VARCHAR, photo_id VARCHAR)''')
     connect.commit()
 
-# ДОБАВИТЬ РЯДЫ В ПРОЦЕДУРЫ
+# ДОБАВИТЬ РЯДЫ
 def add_new_procedura(new_procedura: tuple):
     cursor.execute('''INSERT INTO proceduri (name, time_minute, price, command, description) VALUES (?, ?, ?, ?, ?)''', new_procedura)
+    connect.commit()
+
+def add_new_sert(new_sert: tuple):
+    cursor.execute(
+        '''INSERT INTO photo_sertificate (name, photo_id) VALUES (?, ?)''',
+        new_sert)
     connect.commit()
 
 def add_new_klient(new_klient: tuple):

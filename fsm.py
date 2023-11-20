@@ -22,7 +22,7 @@ class CalendarBt(StatesGroup):
 
 class PhotoSertificate(StatesGroup):
 
-    name = State
-    photo_id = State
+
+    photo_id = State()
 
 

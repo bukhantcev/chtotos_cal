@@ -7,6 +7,7 @@ from cb_handlers import dp
 from admin import dp
 from fill_db_proceduri import fill_db
 from FM_handlers import  dp
+import middleware
 
 
 
@@ -38,7 +39,7 @@ async def on_start(_):
 
 
 
-
-
-executor.start_polling(dp, skip_updates=True, on_startup=on_start)
+if __name__ == '__main__':
+    middleware.setup(dp)
+    executor.start_polling(dp, skip_updates=True, on_startup=on_start)
 

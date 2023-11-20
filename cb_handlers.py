@@ -251,10 +251,10 @@ async def info(cb: CallbackQuery):
 
 @dp.callback_query_handler(text='view_sertificates')
 async def view_sertificate(cb: CallbackQuery):
-    for i in range(len(sertificat_list)):
+    for i in range(len(sertificat_list)-1):
         path = f'sertificat_file/sert_{i+1}.jpg'
         file = InputFile(path)
-        if i == len(sertificat_list)-1:
+        if i == len(sertificat_list)-2:
             await bot.send_photo(chat_id=cb.from_user.id, photo=file, reply_markup=kb_mainmenu)
         else:
             await bot.send_photo(chat_id=cb.from_user.id, photo=file)
