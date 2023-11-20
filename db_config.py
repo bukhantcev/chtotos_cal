@@ -25,7 +25,7 @@ def create_table_klients():
 # СОЗДАНИЕ ТАБЛИЦЫ ФОТО СЕРТИФИКАТЫ
 def create_table_photo_sertificate():
     cursor.execute('''CREATE TABLE IF NOT EXISTS photo_sertificate (id INTEGER 
-    PRIMARY KEY AUTOINCREMENT, name VARCHAR, photo_id VARCHAR)''')
+    PRIMARY KEY AUTOINCREMENT, name VARCHAR, photo_id VARCHAR, activ_index INTEGER)''')
     connect.commit()
 
 # ДОБАВИТЬ РЯДЫ
@@ -77,6 +77,10 @@ def delete_procedura(proceduri_id: tuple):
 #ИЗМЕНЕНИЕ КОЛОНКИ ПО tg_id
 def update_klient(new_data: tuple, column_name):
     cursor.execute(f'UPDATE klients SET {column_name}=? WHERE tg_id=?', new_data)
+    connect.commit()
+
+def update_photo_sertificate(new_data: tuple, column_name):
+    cursor.execute(f'UPDATE photo_sertificate SET {column_name}=? WHERE photo_id=?', new_data)
     connect.commit()
 
 

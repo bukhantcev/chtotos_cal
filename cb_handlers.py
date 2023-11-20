@@ -12,9 +12,9 @@ from keyboards import kb_mainmenu, kb_stop
 from loader import dp, bot
 from text_welcome import text_welcome
 from text_obomne import text_obomne
-from keyboards import kb_mainmenu, kb_back_to_uslugi, sert_kb
+from keyboards import kb_mainmenu, kb_back_to_uslugi, sert_kb, kb_sert_seredina, kb_sert_final, kb_sert_nachalo
 from text_uslugi import text_uslugi
-from db_config import cursor, find_idproceduri, find_procedura, connect, add_new_klient, update_klient, find_name_procedure
+from db_config import cursor, find_idproceduri, find_procedura, connect, add_new_klient, update_klient, find_name_procedure, update_photo_sertificate
 from fsm import  NewItem, CalendarBt
 from aiogram.dispatcher import  FSMContext
 from klients import Klients
@@ -249,7 +249,7 @@ async def calendar_month(cb: CallbackQuery, state: FSMContext):
 async def info(cb: CallbackQuery):
     await bot.edit_message_text(text='-------------ГЛАВНОЕ МЕНЮ-------------', chat_id=cb.from_user.id, message_id=cb.message.message_id, reply_markup=kb_mainmenu)
 
-@dp.callback_query_handler(text='view_sertificates')
+'''@dp.callback_query_handler(text='view_sertificates')
 async def view_sertificate(cb: CallbackQuery):
     for i in range(len(sertificat_list)-1):
         path = f'sertificat_file/sert_{i+1}.jpg'
@@ -257,7 +257,49 @@ async def view_sertificate(cb: CallbackQuery):
         if i == len(sertificat_list)-2:
             await bot.send_photo(chat_id=cb.from_user.id, photo=file, reply_markup=kb_mainmenu)
         else:
-            await bot.send_photo(chat_id=cb.from_user.id, photo=file)
+            await bot.send_photo(chat_id=cb.from_user.id, photo=file)'''
+
+@dp.callback_query_handler(text='view_sertificates')
+async def view_sertificate(cb: CallbackQuery):
+    data = cursor.execute('SELECT * FROM photo_sertificate').fetchall()
+    list_id = []
+    for id in data:
+        list_id.append(id[2])
+    await bot.delete_message(chat_id=cb.message.chat.id, message_id=cb.message.message_id)
+    await bot.send_photo(chat_id=cb.from_user.id, photo=list_id[0], reply_markup=kb_sert_nachalo)
+    new_data = (1, list_id[0])
+    update_photo_sertificate(new_data, 'activ_index')
+
+
+
+@dp.callback_query_handler(text='go_forward')
+async def next_sertificate(cb: CallbackQuery):
+    data = cursor.execute('SELECT * FROM photo_sertificate').fetchall()
+    list_id = []
+    for id in data:
+        list_id.append(id[2])
+    current_photo = cursor.execute('SELECT photo_id FROM photo_sertificate WHERE activ_index=1').fetchall()[0][0]
+    current_index = list_id.index(current_photo)
+    print(current_index)
+    print(len(list_id))
+    if current_index < len(data) - 1:
+        new_data = (1, list_id[current_index+1])
+        update_photo_sertificate(new_data, 'activ_index')
+        new_data0 = (0, list_id[current_index])
+        update_photo_sertificate(new_data0, 'activ_index')
+
+    if current_index < len(data)-2:
+        await bot.send_photo(chat_id=cb.from_user.id, photo=list_id[current_index + 1], reply_markup=kb_sert_seredina)
+        await bot.delete_message(chat_id=cb.message.chat.id, message_id=cb.message.message_id)
+
+    else:
+        await bot.send_photo(chat_id=cb.from_user.id, photo=list_id[len(list_id)-1], reply_markup=kb_sert_final)
+        await bot.delete_message(chat_id=cb.message.chat.id, message_id=cb.message.message_id)
+        new_data0 = (1, list_id[len(list_id)-1])
+        update_photo_sertificate(new_data0, 'activ_index')
+        new_data1 = (0, list_id[len(list_id)-2])
+        update_photo_sertificate(new_data1, 'activ_index')
+
 
 
 
