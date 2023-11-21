@@ -26,3 +26,16 @@ class PhotoSertificate(StatesGroup):
     photo_id = State()
 
 
+class Count(StatesGroup):
+    current_count = State()
+    next_count = State()
+    final = State()
+
+
+
+
+
+
+
+
+

@@ -1,3 +1,5 @@
+import os
+
 from aiogram import Dispatcher
 from aiogram.dispatcher import FSMContext
 from aiogram.types import Message, CallbackQuery
@@ -69,21 +71,16 @@ async def add_photo_sert(message: Message, state: FSMContext):
 @dp.message_handler(content_types='photo', state=PhotoSertificate.photo_id)
 async def get_photo_sert(message: Message, admin: bool, state: FSMContext):
     if admin:
-        date = cursor.execute('SELECT * FROM photo_sertificate').fetchall()
+        date = os.listdir('sertificat_file')
         print(message.caption)
         if message.caption != 'Стоп':
             if len(date)==0:
-                name = 'sert_1'
-                photo_id = dict(message.photo[0]).get('file_id')
-                new_sert = (name, photo_id)
-                add_new_sert(new_sert=new_sert)
+                await message.photo[-1].download(destination_file='sertificat_file/sert_1.jpg')
                 await PhotoSertificate.photo_id.set()
-                print(len(date))
             else:
-                name = f"sert_{int(date[len(date)-1][1].split('_')[1]) + 1}"
-                photo_id = dict(message.photo[0]).get('file_id')
-                new_sert = (name, photo_id)
-                add_new_sert(new_sert=new_sert)
+                name = f"sert_{len(date)+1}"
+                await message.photo[-1].download(destination_file=f'sertificat_file/{name}.jpg')
+                print(date)
                 await PhotoSertificate.photo_id.set()
         else:
             await state.finish()

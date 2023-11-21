@@ -67,5 +67,9 @@ kb_sert_final = InlineKeyboardMarkup(inline_keyboard=button_set_final)
 
 
 
+bt_stop_foto = KeyboardButton(text='Стоп')
+kb_stop_foto = ReplyKeyboardMarkup([[bt_stop_foto]], resize_keyboard=True)
+
+
 
 

@@ -1,3 +1,4 @@
+import os
 import pprint
 import pprint
 from aiogram import Dispatcher
@@ -5,7 +6,7 @@ from aiogram import Dispatcher
 from delete_dot import delete_dot
 from google_cal import GoogleCalendar
 from aiogram.types import Message, CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton, InputFile, ContentType, \
-    ReplyKeyboardRemove, ReplyKeyboardMarkup, KeyboardButton, Contact
+    ReplyKeyboardRemove, ReplyKeyboardMarkup, KeyboardButton, Contact, InputMediaPhoto
 from keyboards_cal import cal_kb, create_day_table, kb_creat_event
 from db_config import add_new_procedura, find_procedura, delete_procedura
 from keyboards import kb_mainmenu, kb_stop
@@ -15,7 +16,7 @@ from text_obomne import text_obomne
 from keyboards import kb_mainmenu, kb_back_to_uslugi, sert_kb, kb_sert_seredina, kb_sert_final, kb_sert_nachalo
 from text_uslugi import text_uslugi
 from db_config import cursor, find_idproceduri, find_procedura, connect, add_new_klient, update_klient, find_name_procedure, update_photo_sertificate
-from fsm import  NewItem, CalendarBt
+from fsm import  NewItem, CalendarBt, Count
 from aiogram.dispatcher import  FSMContext
 from klients import Klients
 from master_id import master_id
@@ -249,56 +250,75 @@ async def calendar_month(cb: CallbackQuery, state: FSMContext):
 async def info(cb: CallbackQuery):
     await bot.edit_message_text(text='-------------ГЛАВНОЕ МЕНЮ-------------', chat_id=cb.from_user.id, message_id=cb.message.message_id, reply_markup=kb_mainmenu)
 
-'''@dp.callback_query_handler(text='view_sertificates')
-async def view_sertificate(cb: CallbackQuery):
-    for i in range(len(sertificat_list)-1):
-        path = f'sertificat_file/sert_{i+1}.jpg'
-        file = InputFile(path)
-        if i == len(sertificat_list)-2:
-            await bot.send_photo(chat_id=cb.from_user.id, photo=file, reply_markup=kb_mainmenu)
+@dp.callback_query_handler(text='view_sertificates', state=None)
+async def view_sertificate(cb: CallbackQuery, state: FSMContext):
+    path_dir = 'sertificat_file'
+    list_photo = os.listdir(path_dir)
+    path = f'sertificat_file/{list_photo[0]}'
+    file = InputFile(path)
+    await cb.answer('👌')
+    await bot.delete_message(chat_id=cb.from_user.id, message_id=cb.message.message_id)
+    await bot.send_photo(chat_id=cb.from_user.id, photo=file, reply_markup=kb_sert_nachalo)
+    await Count.next_count.set()
+    global new_data
+    new_data = {'next_count': 1}
+
+@dp.callback_query_handler(text=['go_forward', 'go_back', 'vozvrat_obo_mne'], state=Count.next_count)
+async def view_sertificate(cb: CallbackQuery, state: FSMContext):
+    global new_data
+    if cb.data == 'go_forward':
+        await cb.answer('👌')
+        data = await state.get_data()
+        if data.get('next_count') == None:
+            await state.update_data({'next_count': 2})
+            new_data = await state.get_data()
         else:
-            await bot.send_photo(chat_id=cb.from_user.id, photo=file)'''
-
-@dp.callback_query_handler(text='view_sertificates')
-async def view_sertificate(cb: CallbackQuery):
-    data = cursor.execute('SELECT * FROM photo_sertificate').fetchall()
-    list_id = []
-    for id in data:
-        list_id.append(id[2])
-    await bot.delete_message(chat_id=cb.message.chat.id, message_id=cb.message.message_id)
-    await bot.send_photo(chat_id=cb.from_user.id, photo=list_id[0], reply_markup=kb_sert_nachalo)
-    new_data = (1, list_id[0])
-    update_photo_sertificate(new_data, 'activ_index')
-
-
-
-@dp.callback_query_handler(text='go_forward')
-async def next_sertificate(cb: CallbackQuery):
-    data = cursor.execute('SELECT * FROM photo_sertificate').fetchall()
-    list_id = []
-    for id in data:
-        list_id.append(id[2])
-    current_photo = cursor.execute('SELECT photo_id FROM photo_sertificate WHERE activ_index=1').fetchall()[0][0]
-    current_index = list_id.index(current_photo)
-    print(current_index)
-    print(len(list_id))
-    if current_index < len(data) - 1:
-        new_data = (1, list_id[current_index+1])
-        update_photo_sertificate(new_data, 'activ_index')
-        new_data0 = (0, list_id[current_index])
-        update_photo_sertificate(new_data0, 'activ_index')
-
-    if current_index < len(data)-2:
-        await bot.send_photo(chat_id=cb.from_user.id, photo=list_id[current_index + 1], reply_markup=kb_sert_seredina)
-        await bot.delete_message(chat_id=cb.message.chat.id, message_id=cb.message.message_id)
-
+            if new_data.get('next_count') < len(os.listdir('sertificat_file')):
+                await state.update_data({'next_count': data.get('next_count') + 1})
+                new_data = await state.get_data()
+    if cb.data == 'go_back':
+        await cb.answer('👌')
+        data = await state.get_data()
+        if data.get('next_count') == None:
+            await state.update_data({'next_count': 1})
+            new_data = await state.get_data()
+        else:
+            if new_data.get('next_count') > 1:
+                await state.update_data({'next_count': data.get('next_count') - 1})
+                new_data = await state.get_data()
+    if new_data.get('next_count') == 1:
+        kb = kb_sert_nachalo
+    elif new_data.get('next_count') == len(os.listdir('sertificat_file')):
+        kb = kb_sert_final
     else:
-        await bot.send_photo(chat_id=cb.from_user.id, photo=list_id[len(list_id)-1], reply_markup=kb_sert_final)
-        await bot.delete_message(chat_id=cb.message.chat.id, message_id=cb.message.message_id)
-        new_data0 = (1, list_id[len(list_id)-1])
-        update_photo_sertificate(new_data0, 'activ_index')
-        new_data1 = (0, list_id[len(list_id)-2])
-        update_photo_sertificate(new_data1, 'activ_index')
+        kb = kb_sert_seredina
+    if 0 < new_data.get('next_count')<= len(os.listdir('sertificat_file')):
+        with open(f"sertificat_file/sert_{new_data.get('next_count')}.jpg", 'rb') as file:
+            try:
+                photo = InputMediaPhoto(file)
+                await bot.edit_message_media(chat_id=cb.message.chat.id, message_id=cb.message.message_id, media=photo, reply_markup=kb)
+            except:
+                pass
+    print(new_data.get('next_count'))
+    if cb.data == 'vozvrat_obo_mne':
+        await cb.answer('👌')
+        await state.finish()
+        await bot.delete_message(chat_id=cb.from_user.id, message_id=cb.message.message_id)
+        await bot.send_message(text='-------------ГЛАВНОЕ МЕНЮ-------------', chat_id=cb.from_user.id,
+                                     reply_markup=kb_mainmenu)
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
