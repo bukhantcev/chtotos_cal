@@ -25,7 +25,6 @@ from aiogram import types
 from digits import  digits
 from sertificat_list import sertificat_list
 from date_time import get_tomorow
-import aioschedule
 import asyncio
 
 #ПУНКТ МЕНЮ ОБО МНЕ
