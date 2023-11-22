@@ -47,7 +47,7 @@ sert_kb.row(back_to_main_menu)
 button_forward = InlineKeyboardButton(text='>>>', callback_data='go_forward')
 button_back = InlineKeyboardButton(text='<<<', callback_data='go_back')
 button_vozvrat_obo_mne = InlineKeyboardButton(text='-----Вернуться назад-----', callback_data='vozvrat_obo_mne')
-button_clear = InlineKeyboardButton(text='', callback_data='button_clear')
+button_clear = InlineKeyboardButton(text=' ', callback_data='button_clear')
 button_set_nachalo = [
     [button_clear, button_forward],
     [button_vozvrat_obo_mne]

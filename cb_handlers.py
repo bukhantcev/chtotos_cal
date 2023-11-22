@@ -263,7 +263,7 @@ async def view_sertificate(cb: CallbackQuery, state: FSMContext):
     global new_data
     new_data = {'next_count': 1}
 
-@dp.callback_query_handler(text=['go_forward', 'go_back', 'vozvrat_obo_mne'], state=Count.next_count)
+@dp.callback_query_handler(text=['go_forward', 'go_back', 'vozvrat_obo_mne', 'button_clear'], state=Count.next_count)
 async def view_sertificate(cb: CallbackQuery, state: FSMContext):
     global new_data
     if cb.data == 'go_forward':
@@ -299,13 +299,14 @@ async def view_sertificate(cb: CallbackQuery, state: FSMContext):
                 await bot.edit_message_media(chat_id=cb.message.chat.id, message_id=cb.message.message_id, media=photo, reply_markup=kb)
             except:
                 pass
-    print(new_data.get('next_count'))
     if cb.data == 'vozvrat_obo_mne':
         await cb.answer('👌')
         await state.finish()
         await bot.delete_message(chat_id=cb.from_user.id, message_id=cb.message.message_id)
         await bot.send_message(text='-------------ГЛАВНОЕ МЕНЮ-------------', chat_id=cb.from_user.id,
                                      reply_markup=kb_mainmenu)
+    if cb.data == 'button_clear':
+        await cb.answer('👌')
 
 
 
