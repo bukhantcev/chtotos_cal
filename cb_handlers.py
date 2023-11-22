@@ -4,7 +4,7 @@ import pprint
 from aiogram import Dispatcher
 
 from delete_dot import delete_dot
-from google_cal import GoogleCalendar
+from google_cal import GoogleCalendar, get_event_list
 from aiogram.types import Message, CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton, InputFile, ContentType, \
     ReplyKeyboardRemove, ReplyKeyboardMarkup, KeyboardButton, Contact, InputMediaPhoto
 from keyboards_cal import cal_kb, create_day_table, kb_creat_event
@@ -24,7 +24,9 @@ from keyboards import contact_keyboard
 from aiogram import types
 from digits import  digits
 from sertificat_list import sertificat_list
-
+from date_time import get_tomorow
+import aioschedule
+import asyncio
 
 #ПУНКТ МЕНЮ ОБО МНЕ
 @dp.callback_query_handler(text='obomne')
@@ -48,10 +50,7 @@ async def uslugi(cb: CallbackQuery):
     await bot.delete_message(chat_id=cb.from_user.id,message_id=cb.message.message_id)
 
 
-
-
-
-#ПУНКТ МЕНЮ УСЛУГИ
+#ПУНКТ МЕНЮ УСЛУГИ ВОЗВРАТ
 @dp.callback_query_handler(text='back_uslugi')
 async def back_uslugi(cb: CallbackQuery):
     await cb.answer('👌')
@@ -64,7 +63,7 @@ async def back_uslugi(cb: CallbackQuery):
     await bot.send_message(chat_id=id, text=text_uslugi, reply_markup=kb_uslugi)
     await bot.delete_message(chat_id=cb.from_user.id, message_id=cb.message.message_id)
 
-
+#ЗАПИСЬ НАЧАЛО
 @dp.callback_query_handler(text='zapis', state=None)
 async def zapros_phone(cb: CallbackQuery):
     await bot.send_message(chat_id=cb.from_user.id, text='Для связи с Вами мне потребуется номер Вашего '
@@ -73,7 +72,7 @@ async def zapros_phone(cb: CallbackQuery):
     await cb.answer('👌')
     await NewItem.phone.set()
     await bot.delete_message(chat_id=cb.from_user.id, message_id=cb.message.message_id)
-
+#ЗАПИСЬ НОМЕР ТЕЛЕФОНА
 @dp.message_handler(state=NewItem.phone, content_types=types.ContentType.CONTACT)
 async def phone_catch(message: Message, state: FSMContext):
     contact = message.contact
@@ -92,7 +91,7 @@ async def phone_catch(message: Message, state: FSMContext):
     await NewItem.date.set()
 
 
-
+#ЗАПИСЬ ЖЕЛАЕМАЯ ДАТА
 @dp.message_handler(state=NewItem.date)
 async def phone_catch(message: Message, state: FSMContext):
     await state.update_data({'date':delete_dot(message.text)})
@@ -112,7 +111,7 @@ async def phone_catch(message: Message, state: FSMContext):
                                                    f'\nТелефон: +{vizitka.get("phone").phone_number}.\n\n id клиента: {message.from_user.id}', reply_markup=kb_creat_event)
     await state.finish()
 
-
+#ЗАПИСЬ ОТМЕНА
 @dp.callback_query_handler(text='event_no')
 async def otkaz(cb: CallbackQuery):
     await cb.answer('Запись отменена!!!')
@@ -122,7 +121,7 @@ async def otkaz(cb: CallbackQuery):
     update_klient(new_data, 'status_recording')
     connect.commit()
 
-
+#ЗАПИСЬ ПОДТВЕРЖДЕНИЕ
 @dp.callback_query_handler(text='event_yes', state=None)
 async def calendar(cb: CallbackQuery):
     if cb.data == 'event_yes':
@@ -137,7 +136,7 @@ async def calendar(cb: CallbackQuery):
         connect.commit()
 
 
-
+#КАЛЕНДАРЬ МЕСЯЦ И ГОД
 @dp.callback_query_handler(state=CalendarBt.month)
 async def calendar_month(cb: CallbackQuery, state: FSMContext):
     await state.update_data({'month': cb.data})
@@ -151,7 +150,7 @@ async def calendar_month(cb: CallbackQuery, state: FSMContext):
     await CalendarBt.day.set()
     await bot.delete_message(chat_id=cb.from_user.id, message_id=cb.message.message_id)
 
-
+#КАЛЕНДАРЬ ДЕНЬ
 @dp.callback_query_handler(state=CalendarBt.day)
 async def calendar_month(cb: CallbackQuery, state: FSMContext):
     await state.update_data({'day': cb.data})
@@ -163,7 +162,7 @@ async def calendar_month(cb: CallbackQuery, state: FSMContext):
     await CalendarBt.time.set()
     await bot.delete_message(chat_id=cb.from_user.id, message_id=cb.message.message_id)
 
-
+#КАЛЕНДАРЬ ВРЕМЯ
 @dp.message_handler(state=CalendarBt.time)
 async def calendar_month(message: Message, state: FSMContext):
     content = str(message.text)
@@ -245,11 +244,12 @@ async def calendar_month(cb: CallbackQuery, state: FSMContext):
             await cb.answer('Что-то пошло не так!!!')
 
 
-
+#ВОЗВРАТ В ГЛАВНОЕ МЕНЮ
 @dp.callback_query_handler(text='back_to_main_menu')
 async def info(cb: CallbackQuery):
     await bot.edit_message_text(text='-------------ГЛАВНОЕ МЕНЮ-------------', chat_id=cb.from_user.id, message_id=cb.message.message_id, reply_markup=kb_mainmenu)
 
+#ПОКАЗАТЬ СЕРТИФИКАТЫ
 @dp.callback_query_handler(text='view_sertificates', state=None)
 async def view_sertificate(cb: CallbackQuery, state: FSMContext):
     path_dir = 'sertificat_file'
@@ -263,6 +263,8 @@ async def view_sertificate(cb: CallbackQuery, state: FSMContext):
     global new_data
     new_data = {'next_count': 1}
 
+
+#СЕРТИФИКАТЫ ВПЕРЕД/НАЗАД/ВЫХОД
 @dp.callback_query_handler(text=['go_forward', 'go_back', 'vozvrat_obo_mne', 'button_clear'], state=Count.next_count)
 async def view_sertificate(cb: CallbackQuery, state: FSMContext):
     global new_data
@@ -310,20 +312,6 @@ async def view_sertificate(cb: CallbackQuery, state: FSMContext):
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 @dp.callback_query_handler(text='raboti')
 async def raboti(cb: CallbackQuery):
     await cb.answer('...Раздел находится в разработке...')
@@ -339,9 +327,33 @@ async def kontakti(cb: CallbackQuery):
     await cb.answer('...Раздел находится в разработке...')
 
 
+@dp.callback_query_handler(text='get_event_list')
+async def go_napominanie():
+    calendar_id = '1dbae5a038d3414d565f0e8ba342c1fa018ceb2d3d5bd0245ec6f610b978a446@group.calendar.google.com'
+    event_list = get_event_list(calendar_id=calendar_id)
+    tomorrow_date = get_tomorow()
+    obj = GoogleCalendar()
+    for event in event_list:
+        event_date = event.split(' - ')[1]
+        if event_date == tomorrow_date:
+            procedura = str(obj.get_event(calendar_id=calendar_id, event_id=event_list.get(event))['description']).split('Процедура: ')[1].split('\n')[0]
+            tg_id = str(obj.get_event(calendar_id=calendar_id, event_id=event_list.get(event))['description']).split('id клиента: ')[1]
+            time_event = f"{str(obj.get_event(calendar_id=calendar_id, event_id=event_list.get(event))['start']['dateTime']).split('T')[1].split(':')[0]}:" \
+                         f"{str(obj.get_event(calendar_id=calendar_id, event_id=event_list.get(event))['start']['dateTime']).split('T')[1].split(':')[1]}"
+            await bot.send_message(text=f'Здравствуйте! Напоминаем, что завтра Вы записаны на процедуру: {procedura}.'
+                                        f'\n\nВремя записи - {time_event}\n\nАдрес:-----\nТелефон для связи:----- ', chat_id=tg_id)
+            print(str(obj.get_event(calendar_id=calendar_id, event_id=event_list.get(event))['description']))
+            print(str(obj.get_event(calendar_id=calendar_id, event_id=event_list.get(event))))
 
 
 
+
+
+
+
+
+
+#УСЛУГИ
 @dp.callback_query_handler()
 async def print_commands(cb: CallbackQuery):
     command = cb.data
@@ -358,26 +370,6 @@ async def print_commands(cb: CallbackQuery):
         connect.commit()
         await bot.delete_message(chat_id=cb.from_user.id, message_id=cb.message.message_id)
 
-'''async def contact_keyboard():
-    markup = ReplyKeyboardMarkup(resize_keyboard=True)
-    first_button = KeyboardButton(text=("📱 Отправить"), request_contact=True)
-    markup.add(first_button)
-    return markup
-
-
-# handlers.py
-@dp.message_handler(commands=("contact"))
-async def share_number(message: Message):
-    await message.answer("Нажмите на кнопку ниже, чтобы отправить контакт", reply_markup=await contact_keyboard())
-
-@dp.message_handler(content_types=ContentType.CONTACT)
-async def get_contact(message: Message):
-    contact = message.contact
-    await bot.send_contact(chat_id=master_id, vcard=contact, phone_number=contact.phone_number, first_name=contact.first_name)
-    await message.answer(f"Спасибо, {contact.full_name}.\n"
-                         f"Ваш номер {contact.phone_number} был получен",
-                         reply_markup=ReplyKeyboardRemove())
-'''
 
 
 

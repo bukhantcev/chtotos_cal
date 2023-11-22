@@ -72,4 +72,10 @@ kb_stop_foto = ReplyKeyboardMarkup([[bt_stop_foto]], resize_keyboard=True)
 
 
 
+bt_get_event_list = InlineKeyboardButton(text='Посмотреть записи', callback_data='get_event_list')
+kb_get_event_list = InlineKeyboardMarkup(row_width=1)
+kb_get_event_list.row(bt_get_event_list)
+
+
+
 

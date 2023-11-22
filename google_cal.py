@@ -26,22 +26,31 @@ class GoogleCalendar:
     def delete_event(self, calendar_id, event_id):
         return self.service.events().delete(calendarId=calendar_id, eventId=event_id).execute()
 
+    def get_event(self, calendar_id, event_id):
+        return self.service.events().get(calendarId=calendar_id, eventId=event_id).execute()
+
 
 obj = GoogleCalendar()
 #pprint.pprint(obj.get_calendar_list())
 
 calendar_id = 'bukhantcev@gmail.com'
 
+def get_event_list(calendar_id):
+    page_token = None
+    event_dict = {}
+    while True:
+        events = obj.service.events().list(calendarId=calendar_id, pageToken=page_token).execute()
+        for event in events['items']:
+            if int(event["start"]["dateTime"].split('T')[0].split('-')[1]) >= int(str(datetime.date.today()).split('-')[1]):
+                name_event = f'{event["summary"]} - {event["start"]["dateTime"].split("T")[0].split("-")[2]}-{event["start"]["dateTime"].split("T")[0].split("-")[1]}-{event["start"]["dateTime"].split("T")[0].split("-")[0]}'
+                event_dict[name_event] = event['id']
+        page_token = events.get('nextPageToken')
 
-'''page_token = None
-while True:
-    events = obj.service.events().list(calendarId=calendar_id, pageToken=page_token).execute()
-    for event in events['items']:
-        if int(event["start"]["dateTime"].split('T')[0].split('-')[1]) >= int(str(datetime.date.today()).split('-')[1]):
-         print(f'{event["summary"]} - {event["start"]["dateTime"]}')
-    page_token = events.get('nextPageToken')
-    if not page_token:
-        break'''
+        if not page_token:
+            break
+    return event_dict
+
+print(get_event_list(calendar_id=calendar_id))
 
 
 

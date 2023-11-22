@@ -2,22 +2,29 @@ import os
 
 from aiogram import Dispatcher
 from aiogram.dispatcher import FSMContext
-from aiogram.types import Message, CallbackQuery
+from aiogram.types import Message, CallbackQuery, InputMedia, InputFile, InputMediaPhoto
 from aiogram.utils import exceptions
+
+from date_time import get_tomorow
+from google_cal import GoogleCalendar, get_event_list
 from fsm import PhotoSertificate
 from keyboards_cal import cal_kb
 from db_config import add_new_procedura, find_procedura, delete_procedura, add_new_klient, update_klient, connect, cursor, add_new_sert
-from keyboards import kb_mainmenu
+from keyboards import kb_mainmenu, kb_get_event_list
 from klients import Klients
 from loader import dp, bot
 from text_welcome import text_welcome
 from text_obomne import text_obomne
+import asyncio
+from middleware.config import admin_id
 
 
-
+#СТАРТ
 @dp.message_handler(commands=['start'])
 async def start(message: Message, admin: bool):
-    await message.answer(text_welcome, reply_markup=kb_mainmenu)
+    path = 'start_photo/start_1.jpg'
+    photo = InputFile(path)
+    await message.answer_photo(caption=text_welcome, photo=photo, reply_markup=kb_mainmenu)
     klient = Klients(tg_id=message.from_user.id, first_name=message.from_user.first_name, last_name=message.from_user.last_name,
                      tg_username=message.from_user.username)
     tg_id = klient.tg_id
@@ -30,16 +37,9 @@ async def start(message: Message, admin: bool):
     cursor.execute('SELECT * FROM photo_sertificate')
     data = cursor.fetchall()
 
-    print(data)
-    if admin:
-        await message.answer('Привет админ!')
 
 
-
-
-
-
-
+#ГЛАВНОЕ МЕНЮ
 @dp.message_handler(commands=['main_menu'], state='*')
 async def info(message: Message, state: FSMContext):
     await state.finish()
@@ -63,6 +63,8 @@ async def info(message: Message, state: FSMContext):
     except:
         print('ok')
 
+
+#ДОБАВИТЬ СЕРТИФИКАТ
 @dp.message_handler(commands=['add_sert'], state=None)
 async def add_photo_sert(message: Message, state: FSMContext):
     await message.answer('Пришли фото по одной, у последней добавь описание "Стоп". Также можно написать "Стоп" в сообщении.')
@@ -95,6 +97,31 @@ async def error(message: Message, state: FSMContext):
         await message.answer('Закончили упражнение!')
         await state.finish()
 
+
+
+@dp.message_handler(commands=['get_event_list'])
+async def get_event_l(message: Message):
+    await message.answer(text='Gmi', reply_markup=kb_get_event_list)
+
+
+@dp.message_handler(commands=['go_rassilka'])
+async def go_napominanie(message: Message, admin: bool):
+    if admin:
+        calendar_id = '1dbae5a038d3414d565f0e8ba342c1fa018ceb2d3d5bd0245ec6f610b978a446@group.calendar.google.com'
+        event_list = get_event_list(calendar_id=calendar_id)
+        tomorrow_date = get_tomorow()
+        obj = GoogleCalendar()
+        for event in event_list:
+            event_date = event.split(' - ')[1]
+            if event_date == tomorrow_date:
+                name = obj.get_event(calendar_id=calendar_id, event_id=event_list.get(event))['summary']
+                procedura = str(obj.get_event(calendar_id=calendar_id, event_id=event_list.get(event))['description']).split('Процедура: ')[1].split('\n')[0]
+                tg_id = str(obj.get_event(calendar_id=calendar_id, event_id=event_list.get(event))['description']).split('id клиента: ')[1]
+                time_event = f"{str(obj.get_event(calendar_id=calendar_id, event_id=event_list.get(event))['start']['dateTime']).split('T')[1].split(':')[0]}:" \
+                             f"{str(obj.get_event(calendar_id=calendar_id, event_id=event_list.get(event))['start']['dateTime']).split('T')[1].split(':')[1]}"
+                await bot.send_message(text=f'Здравствуйте, {name}! Напоминаем, что завтра Вы записаны на процедуру: {procedura}.'
+                                            f'\n\nВремя записи - {time_event}\n\nАдрес:-----\nТелефон для связи:----- ', chat_id=tg_id)
+                await bot.send_message(chat_id=admin_id[0], text=f'На завтра есть запись: {name}.\nПроцедура: {procedura}.\nВремя: {time_event}.')
 
 
 
