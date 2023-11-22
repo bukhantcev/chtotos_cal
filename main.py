@@ -1,6 +1,4 @@
 import asyncio
-
-import aioschedule
 from aiogram.types import Message
 from aiogram.utils import executor
 from db_config import create_table, create_table_klients, create_table_photo_sertificate
