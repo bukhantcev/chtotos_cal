@@ -1,7 +1,6 @@
 from loader import bot
 from google_cal import get_event_list, GoogleCalendar
 from date_time import get_tomorow
-from middleware.config import admin_id
 
 
 
