@@ -1,5 +1,4 @@
 import os
-
 from aiogram import Dispatcher
 from aiogram.dispatcher import FSMContext
 from aiogram.types import Message, CallbackQuery, InputMedia, InputFile, InputMediaPhoto
@@ -122,7 +121,6 @@ async def go_napominanie(message: Message, admin: bool):
                 await bot.send_message(text=f'Здравствуйте, {name}! Напоминаем, что завтра Вы записаны на процедуру: {procedura}.'
                                             f'\n\nВремя записи - {time_event}\n\nАдрес:-----\nТелефон для связи:----- ', chat_id=tg_id)
                 await bot.send_message(chat_id=admin_id[0], text=f'На завтра есть запись: {name}.\nПроцедура: {procedura}.\nВремя: {time_event}.')
-
 
 
 
