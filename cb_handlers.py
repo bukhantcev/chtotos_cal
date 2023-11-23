@@ -229,7 +229,7 @@ async def calendar_month(cb: CallbackQuery, state: FSMContext):
                                                 text=f'Выбрана дата: {data.get("day")}-{data.get("month").split("-")[1]}-{data.get("month").split("-")[0]}'
                                                      f'\nВремя: {data.get("time")}\nЗапись добавлена в календарь!')
 
-            await bot.send_message(chat_id=cb.from_user.id, text=f'Вы записаны на {data.get("day")}-{data.get("month").split("-")[1]}'
+            await bot.send_message(chat_id=info[0][0], text=f'Вы записаны на {data.get("day")}-{data.get("month").split("-")[1]}'
                                                                  f'-{data.get("month").split("-")[0]}\n🕒: {data.get("time")}\n'
                                                                  f'Наш адрес и телефон Вы можете найти в разделе Контакты. Будем рады видеть Вас! ')
             new_data = ('active', info[0][0])
