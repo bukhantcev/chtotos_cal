@@ -1,7 +1,7 @@
 from aiogram.types import Message, CallbackQuery
 from aiogram.dispatcher.middlewares import BaseMiddleware
 
-from .config  import admin_id
+from .config import admin_id
 
 
 class Administrator(BaseMiddleware):
@@ -13,7 +13,6 @@ class Administrator(BaseMiddleware):
             else:
                 data['admin'] = False
 
-
     async def on_process_callback_query(self, call: CallbackQuery, data: dict):
         for admin in admin_id:
             if call.from_user.id == admin:
@@ -21,5 +20,3 @@ class Administrator(BaseMiddleware):
                 break
             else:
                 data['admin'] = False
-
-

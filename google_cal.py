@@ -6,8 +6,8 @@ import datetime
 
 
 class GoogleCalendar:
-    SCOPES=["https://www.googleapis.com/auth/calendar"]
-    FILE_PATH='studied-jigsaw-404516-d3905d991705.json'
+    SCOPES = ["https://www.googleapis.com/auth/calendar"]
+    FILE_PATH = 'studied-jigsaw-404516-d3905d991705.json'
 
     def __init__(self):
         credentials = service_account.Credentials.from_service_account_file(filename=self.FILE_PATH, scopes=self.SCOPES)
@@ -31,9 +31,10 @@ class GoogleCalendar:
 
 
 obj = GoogleCalendar()
-#pprint.pprint(obj.get_calendar_list())
+# pprint.pprint(obj.get_calendar_list())
 
 calendar_id = 'bukhantcev@gmail.com'
+
 
 def get_event_list(calendar_id):
     page_token = None
@@ -41,7 +42,8 @@ def get_event_list(calendar_id):
     while True:
         events = obj.service.events().list(calendarId=calendar_id, pageToken=page_token).execute()
         for event in events['items']:
-            if int(event["start"]["dateTime"].split('T')[0].split('-')[1]) >= int(str(datetime.date.today()).split('-')[1]):
+            if int(event["start"]["dateTime"].split('T')[0].split('-')[1]) >= int(
+                    str(datetime.date.today()).split('-')[1]):
                 name_event = f'{event["summary"]} - {event["start"]["dateTime"].split("T")[0].split("-")[2]}-{event["start"]["dateTime"].split("T")[0].split("-")[1]}-{event["start"]["dateTime"].split("T")[0].split("-")[0]}'
                 event_dict[name_event] = event['id']
         page_token = events.get('nextPageToken')
@@ -50,10 +52,9 @@ def get_event_list(calendar_id):
             break
     return event_dict
 
+
 print(get_event_list(calendar_id=calendar_id))
 
-
-
-#pprint.pprint(obj.get_calendar_list())
-#obj.add_calendar(calendar_id='1dbae5a038d3414d565f0e8ba342c1fa018ceb2d3d5bd0245ec6f610b978a446@group.calendar.google.com')
-#pprint.pprint(obj.get_calendar_list())
+# pprint.pprint(obj.get_calendar_list())
+# obj.add_calendar(calendar_id='1dbae5a038d3414d565f0e8ba342c1fa018ceb2d3d5bd0245ec6f610b978a446@group.calendar.google.com')
+# pprint.pprint(obj.get_calendar_list())

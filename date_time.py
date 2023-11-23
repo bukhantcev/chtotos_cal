@@ -6,4 +6,3 @@ def get_tomorow():
     tomorrow = today + datetime.timedelta(days=1)
     tomorrow_date = f'{str(tomorrow).split("-")[2]}-{str(tomorrow).split("-")[1]}-{str(tomorrow).split("-")[0]}'
     return tomorrow_date
-

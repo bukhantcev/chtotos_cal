@@ -4,14 +4,12 @@ from loader import dp
 from aiogram.types import Message, CallbackQuery
 
 
-
 class NewItem(StatesGroup):
-
     phone = State()
     date = State()
 
-class CalendarBt(StatesGroup):
 
+class CalendarBt(StatesGroup):
     user = State()
     month = State()
     day = State()
@@ -19,10 +17,7 @@ class CalendarBt(StatesGroup):
     final = State()
 
 
-
 class PhotoSertificate(StatesGroup):
-
-
     photo_id = State()
 
 
@@ -30,12 +25,3 @@ class Count(StatesGroup):
     current_count = State()
     next_count = State()
     final = State()
-
-
-
-
-
-
-
-
-

@@ -5,8 +5,8 @@ from keyboards import kb_mainmenu
 from loader import dp, bot, memory
 from text_welcome import text_welcome
 from text_obomne import text_obomne
-from fsm import  NewItem
-from aiogram.dispatcher import  FSMContext
+from fsm import NewItem
+from aiogram.dispatcher import FSMContext
 from loader import memory
 
 
@@ -14,6 +14,7 @@ from loader import memory
 async def zapros_phone(cb: CallbackQuery):
     await bot.send_message(chat_id=cb.from_user.id, text='Пришли номер')
     await NewItem.phone.set()
+
 
 @dp.message_handler(state=NewItem.phone)
 async def phone_catch(message: Message, state: FSMContext):

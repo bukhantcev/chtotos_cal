@@ -18,6 +18,3 @@ def fill_db():
 
         update_procedura(new_data)
     print('db zapolnena')
-
-
-

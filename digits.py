@@ -1,4 +1,3 @@
-
 def digits(data: str):
     result = ''
     for i in range(len(data)):
@@ -6,5 +5,3 @@ def digits(data: str):
         if data[i].isdigit():
             result = result + str(data[i])
     return int(result)
-
-

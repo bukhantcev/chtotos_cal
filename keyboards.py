@@ -1,32 +1,31 @@
-from aiogram.types import KeyboardButton, InlineKeyboardButton, ReplyKeyboardMarkup, InlineKeyboardMarkup, KeyboardButtonRequestUser
+from aiogram.types import KeyboardButton, InlineKeyboardButton, ReplyKeyboardMarkup, InlineKeyboardMarkup, \
+    KeyboardButtonRequestUser
 
-
-#Обычные кнопки:
-
-
+# Обычные кнопки:
 
 
 # Инлайн кнопки:
-#Main menu
+# Main menu
 list_buttonmenu = [
-[InlineKeyboardButton(text='Обо мне', callback_data='obomne'),
-InlineKeyboardButton(text='Услуги', callback_data='uslugi')],
-[InlineKeyboardButton(text='Мои работы', callback_data='raboti'),
-InlineKeyboardButton(text='Записаться', callback_data='zapis')],
-[InlineKeyboardButton(text='Отзывы', callback_data='otzivi'),
-InlineKeyboardButton(text='Контакты', callback_data='kontakti')]
+    [InlineKeyboardButton(text='Обо мне', callback_data='obomne'),
+     InlineKeyboardButton(text='Услуги', callback_data='uslugi')],
+    [InlineKeyboardButton(text='Мои работы', callback_data='raboti'),
+     InlineKeyboardButton(text='Записаться', callback_data='zapis')],
+    [InlineKeyboardButton(text='Отзывы', callback_data='otzivi'),
+     InlineKeyboardButton(text='Контакты', callback_data='kontakti')]
 ]
 kb_mainmenu = InlineKeyboardMarkup(inline_keyboard=list_buttonmenu)
 
 bt_back_to_uslugi = InlineKeyboardButton(text='--Вернуться к услугам--', callback_data='back_uslugi')
 bt_zapis = InlineKeyboardButton(text='--Записаться--', callback_data='zapis')
-kb_back_to_uslugi = InlineKeyboardMarkup(row_width=1,)
+kb_back_to_uslugi = InlineKeyboardMarkup(row_width=1, )
 
 kb_back_to_uslugi.row(bt_zapis)
 kb_back_to_uslugi.row(bt_back_to_uslugi)
 
 bt_stop = KeyboardButton(text='Отменить и выйти')
 kb_stop = ReplyKeyboardMarkup([[bt_stop]], resize_keyboard=True)
+
 
 async def contact_keyboard():
     markup = ReplyKeyboardMarkup(resize_keyboard=True)
@@ -40,9 +39,6 @@ back_to_main_menu = InlineKeyboardButton(text='Вернуться в главн�
 sert_kb = InlineKeyboardMarkup(row_width=1)
 sert_kb.row(sert_bt)
 sert_kb.row(back_to_main_menu)
-
-
-
 
 button_forward = InlineKeyboardButton(text='>>>', callback_data='go_forward')
 button_back = InlineKeyboardButton(text='<<<', callback_data='go_back')
@@ -65,17 +61,9 @@ kb_sert_nachalo = InlineKeyboardMarkup(inline_keyboard=button_set_nachalo)
 kb_sert_seredina = InlineKeyboardMarkup(inline_keyboard=button_set_seredina)
 kb_sert_final = InlineKeyboardMarkup(inline_keyboard=button_set_final)
 
-
-
 bt_stop_foto = KeyboardButton(text='Стоп')
 kb_stop_foto = ReplyKeyboardMarkup([[bt_stop_foto]], resize_keyboard=True)
-
-
 
 bt_get_event_list = InlineKeyboardButton(text='Посмотреть записи', callback_data='get_event_list')
 kb_get_event_list = InlineKeyboardMarkup(row_width=1)
 kb_get_event_list.row(bt_get_event_list)
-
-
-
-
