@@ -1,8 +1,6 @@
 import asyncio
 from aiogram.types import Message
 from aiogram.utils import executor
-
-from chtotos_cal.middleware.config import admin_id
 from db_config import create_table, create_table_klients, create_table_photo_sertificate
 from loader import bot, dp
 from handlers import dp
