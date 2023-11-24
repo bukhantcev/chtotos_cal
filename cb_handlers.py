@@ -347,6 +347,7 @@ async def otzivi(cb: CallbackQuery):
 
 @dp.callback_query_handler(text='kontakti')
 async def kontakti(cb: CallbackQuery):
+    await cb.answer('👌')
     await bot.send_message(chat_id=cb.message.chat.id, text=text_kontacts)
 
 
