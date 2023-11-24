@@ -13,7 +13,7 @@ from keyboards import kb_mainmenu, kb_stop
 from loader import dp, bot
 from text_welcome import text_welcome
 from text_obomne import text_obomne
-from keyboards import kb_mainmenu, kb_back_to_uslugi, sert_kb, kb_sert_seredina, kb_sert_final, kb_sert_nachalo
+from keyboards import kb_mainmenu, kb_back_to_uslugi, sert_kb, kb_sert_seredina, kb_sert_final, kb_sert_nachalo, back_to_main_menu
 from text_uslugi import text_uslugi
 from db_config import cursor, find_idproceduri, find_procedura, connect, add_new_klient, update_klient, \
     find_name_procedure, update_photo_sertificate
@@ -27,6 +27,7 @@ from digits import digits
 from sertificat_list import sertificat_list
 from date_time import get_tomorow
 import asyncio
+from kontacts import text_kontacts
 
 
 # ПУНКТ МЕНЮ ОБО МНЕ
@@ -346,7 +347,7 @@ async def otzivi(cb: CallbackQuery):
 
 @dp.callback_query_handler(text='kontakti')
 async def kontakti(cb: CallbackQuery):
-    await cb.answer('...Раздел находится в разработке...')
+    await bot.send_message(text=text_kontacts, reply_markup=back_to_main_menu)
 
 
 @dp.callback_query_handler(text='get_event_list')
