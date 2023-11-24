@@ -369,7 +369,7 @@ async def go_napominanie():
             time_event = f"{str(obj.get_event(calendar_id=calendar_id, event_id=event_list.get(event))['start']['dateTime']).split('T')[1].split(':')[0]}:" \
                          f"{str(obj.get_event(calendar_id=calendar_id, event_id=event_list.get(event))['start']['dateTime']).split('T')[1].split(':')[1]}"
             await bot.send_message(text=f'Здравствуйте! Напоминаем, что завтра Вы записаны на процедуру: {procedura}.'
-                                        f'\n\nВремя записи - {time_event}\n\nАдрес:-----\nТелефон для связи:----- ',
+                                        f'\n\nВремя записи - {time_event}\n\nАдрес: г. Щёлково, микрорайон Потаповский, д.1, к.1, Beauty Space RAI\nТелефон для связи: +7(916)-261-43-01 ',
                                    chat_id=tg_id)
             print(str(obj.get_event(calendar_id=calendar_id, event_id=event_list.get(event))['description']))
             print(str(obj.get_event(calendar_id=calendar_id, event_id=event_list.get(event))))
