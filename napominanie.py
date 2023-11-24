@@ -10,6 +10,7 @@ async def loop_message(bt: bot):
         event_list = get_event_list(calendar_id=calendar_id)
         tomorrow_date = get_tomorow()
         obj = GoogleCalendar()
+        index = 0
         for event in event_list:
             event_date = event.split(' - ')[1]
             if event_date == tomorrow_date:
@@ -27,8 +28,9 @@ async def loop_message(bt: bot):
                          f'\n\nВремя записи - {time_event}\n\nАдрес:-----\nТелефон для связи:----- ', chat_id=tg_id)
                 await bt.send_message(chat_id=admin_id[0],
                                       text=f'На завтра есть запись: {name}.\nПроцедура: {procedura}.\nВремя: {time_event}.')
-            else:
-                await bt.send_message(chat_id=admin_id[0], text='На завтра записей нет.')
+                index = 1
+        if index == 0:
+            await bt.send_message(chat_id=admin_id[0], text='На завтра записей нет.')
         print('rabotaet')
     except:
         await bt.send_message(chat_id=admin_id[0], text='Проверка календаря не выполнена')
