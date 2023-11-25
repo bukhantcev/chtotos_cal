@@ -25,7 +25,7 @@ async def loop_message(bt: bot):
                              f"{str(obj.get_event(calendar_id=calendar_id, event_id=event_list.get(event))['start']['dateTime']).split('T')[1].split(':')[1]}"
                 await bt.send_message(
                     text=f'Здравствуйте, {name}! Напоминаем, что завтра Вы записаны на процедуру: {procedura}.'
-                         f'\n\nВремя записи - {time_event}\n\nАдрес:-----\nТелефон для связи:----- ', chat_id=tg_id)
+                         f'\n\nВремя записи - {time_event}\n\nАдрес: г. Щёлково, микрорайон Потаповский, д.1, к.1, BeautySpace RAI\nТелефон для связи: +7(916)-261-43-01', chat_id=tg_id)
                 await bt.send_message(chat_id=admin_id[1],
                                       text=f'На завтра есть запись: {name}.\nПроцедура: {procedura}.\nВремя: {time_event}.')
                 await bt.send_message(chat_id=admin_id[0],
