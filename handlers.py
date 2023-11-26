@@ -106,7 +106,7 @@ async def get_event_l(message: Message):
     await message.answer(text='Gmi', reply_markup=kb_get_event_list)
 
 
-@dp.message_handler(commands=['go_rassilka'])
+@dp.message_handler(commands=['today'])
 async def go_napominanie(message: Message, admin: bool):
     if admin:
         calendar_id = '1dbae5a038d3414d565f0e8ba342c1fa018ceb2d3d5bd0245ec6f610b978a446@group.calendar.google.com'
@@ -129,4 +129,6 @@ async def go_napominanie(message: Message, admin: bool):
                     text=f'Здравствуйте, {str(name).split(" ")[0]}! Напоминаем, что сегодня {today_date} Вы записаны на процедуру: {procedura}.'
                          f'\n\nВремя записи - {time_event}\n\nАдрес: г. Щёлково, микрорайон Потаповский, д.1, к.1, BeautySpace RAI\nТелефон для связи: +7(916)-261-43-01 ', chat_id=tg_id)
                 await bot.send_message(chat_id=admin_id[0],
+                                       text=f'На сегодня есть запись: {name}.\nПроцедура: {procedura}.\nВремя: {time_event}.')
+                await bot.send_message(chat_id=admin_id[1],
                                        text=f'На сегодня есть запись: {name}.\nПроцедура: {procedura}.\nВремя: {time_event}.')
