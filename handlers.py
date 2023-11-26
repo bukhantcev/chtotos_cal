@@ -42,6 +42,16 @@ async def start(message: Message, admin: bool):
 # ГЛАВНОЕ МЕНЮ
 @dp.message_handler(commands=['main_menu'], state='*')
 async def info(message: Message, state: FSMContext):
+    klient = Klients(tg_id=message.from_user.id, first_name=message.from_user.first_name,
+                     last_name=message.from_user.last_name,
+                     tg_username=message.from_user.username)
+    tg_id = klient.tg_id
+    first_name = klient.first_name
+    last_name = klient.last_name
+    tg_username = klient.tg_username
+    new_klient = (tg_id, first_name, last_name, tg_username)
+    add_new_klient(new_klient)
+    print(message.from_user.id)
     await state.finish()
     try:
         message_id = message.message_id
@@ -113,6 +123,7 @@ async def go_napominanie(message: Message, admin: bool):
         event_list = get_event_list(calendar_id=calendar_id)
         today_date = get_today()
         obj = GoogleCalendar()
+        index = 0
         for event in event_list:
             event_date = event.split(' - ')[1]
             if event_date == today_date:
@@ -126,9 +137,14 @@ async def go_napominanie(message: Message, admin: bool):
                 time_event = f"{str(obj.get_event(calendar_id=calendar_id, event_id=event_list.get(event))['start']['dateTime']).split('T')[1].split(':')[0]}:" \
                              f"{str(obj.get_event(calendar_id=calendar_id, event_id=event_list.get(event))['start']['dateTime']).split('T')[1].split(':')[1]}"
                 await bot.send_message(
-                    text=f'Здравствуйте, {str(name).split(" ")[0]}! Напоминаем, что сегодня {today_date} Вы записаны на процедуру: {procedura}.'
+                    text=f'Здравствуйте, {str(name).split(" ")[0] if " " in str(name) else name}! Напоминаем, что сегодня {today_date} Вы записаны на процедуру: {procedura}.'
                          f'\n\nВремя записи - {time_event}\n\nАдрес: г. Щёлково, микрорайон Потаповский, д.1, к.1, BeautySpace RAI\nТелефон для связи: +7(916)-261-43-01 ', chat_id=tg_id)
                 await bot.send_message(chat_id=admin_id[0],
                                        text=f'На сегодня есть запись: {name}.\nПроцедура: {procedura}.\nВремя: {time_event}.')
                 await bot.send_message(chat_id=admin_id[1],
                                        text=f'На сегодня есть запись: {name}.\nПроцедура: {procedura}.\nВремя: {time_event}.')
+                index = 1
+
+        if index == 0:
+            await bot.send_message(chat_id=admin_id[1], text='На сегодня записей нет.')
+            await bot.send_message(chat_id=admin_id[0], text='На сегодня записей нет.')

@@ -53,7 +53,6 @@ def get_event_list(calendar_id):
     return event_dict
 
 
-print(get_event_list(calendar_id=calendar_id))
 
 # pprint.pprint(obj.get_calendar_list())
 # obj.add_calendar(calendar_id='1dbae5a038d3414d565f0e8ba342c1fa018ceb2d3d5bd0245ec6f610b978a446@group.calendar.google.com')

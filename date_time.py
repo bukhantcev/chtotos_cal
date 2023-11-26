@@ -13,4 +13,3 @@ def get_today():
     today_date = f'{str(today).split("-")[2]}-{str(today).split("-")[1]}-{str(today).split("-")[0]}'
     return today_date
 
-print(get_today())

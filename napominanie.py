@@ -24,7 +24,7 @@ async def loop_message(bt: bot):
                 time_event = f"{str(obj.get_event(calendar_id=calendar_id, event_id=event_list.get(event))['start']['dateTime']).split('T')[1].split(':')[0]}:" \
                              f"{str(obj.get_event(calendar_id=calendar_id, event_id=event_list.get(event))['start']['dateTime']).split('T')[1].split(':')[1]}"
                 await bt.send_message(
-                    text=f'Здравствуйте, {str(name).split(" ")[0]}! Напоминаем, что сегодня {today_date} Вы записаны на процедуру: {procedura}.'
+                    text=f'Здравствуйте, {str(name).split(" ")[0] if " " in str(name) else name}! Напоминаем, что сегодня {today_date} Вы записаны на процедуру: {procedura}.'
                          f'\n\nВремя записи - {time_event}\n\nАдрес: г. Щёлково, микрорайон Потаповский, д.1, к.1, BeautySpace RAI\nТелефон для связи: +7(916)-261-43-01', chat_id=tg_id)
                 await bt.send_message(chat_id=admin_id[1],
                                       text=f'На сегодня есть запись: {name}.\nПроцедура: {procedura}.\nВремя: {time_event}.')
@@ -32,8 +32,8 @@ async def loop_message(bt: bot):
                                       text=f'На сегодня есть запись: {name}.\nПроцедура: {procedura}.\nВремя: {time_event}.')
                 index = 1
         if index == 0:
-            await bt.send_message(chat_id=admin_id[1], text='На завтра записей нет.')
-            await bt.send_message(chat_id=admin_id[0], text='На завтра записей нет.')
+            await bt.send_message(chat_id=admin_id[1], text='На сегодня записей нет.')
+            await bt.send_message(chat_id=admin_id[0], text='На сегодня записей нет.')
         print('rabotaet')
     except:
         await bt.send_message(chat_id=admin_id[1], text='Проверка календаря не выполнена')
