@@ -263,6 +263,7 @@ async def calendar_month(cb: CallbackQuery, state: FSMContext):
             await cb.answer('👌')
         except:
             await cb.answer('Что-то пошло не так!!!')
+            await state.finish()
 
 
 # ВОЗВРАТ В ГЛАВНОЕ МЕНЮ
