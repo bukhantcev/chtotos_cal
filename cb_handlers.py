@@ -1,8 +1,11 @@
+
 import os
 import pprint
 import pprint
-from aiogram import Dispatcher
+from datetime import datetime
 
+from aiogram import Dispatcher
+from convert_to_int import convert_to_int, sort_actual_list
 from delete_dot import delete_dot
 from google_cal import GoogleCalendar, get_event_list
 from aiogram.types import Message, CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton, InputFile, ContentType, \
@@ -28,6 +31,8 @@ from sertificat_list import sertificat_list
 from date_time import get_tomorow
 import asyncio
 from kontacts import text_kontacts
+from date_time import get_today, future
+from middleware.config import admin_id
 
 
 # ПУНКТ МЕНЮ ОБО МНЕ
@@ -353,27 +358,56 @@ async def kontakti(cb: CallbackQuery):
     await bot.send_message(chat_id=cb.message.chat.id, text=text_kontacts,reply_markup=kb_mainmenu)
 
 
+
 @dp.callback_query_handler(text='get_event_list')
-async def go_napominanie():
-    calendar_id = '1dbae5a038d3414d565f0e8ba342c1fa018ceb2d3d5bd0245ec6f610b978a446@group.calendar.google.com'
-    event_list = get_event_list(calendar_id=calendar_id)
-    tomorrow_date = get_tomorow()
-    obj = GoogleCalendar()
-    for event in event_list:
-        event_date = event.split(' - ')[1]
-        if event_date == tomorrow_date:
+async def get_events(cb: CallbackQuery):
+    try:
+        calendar_id = '1dbae5a038d3414d565f0e8ba342c1fa018ceb2d3d5bd0245ec6f610b978a446@group.calendar.google.com'
+        event_list = get_event_list(calendar_id=calendar_id)
+        today_date = get_today()
+        obj = GoogleCalendar()
+        index = 0
+        list_int = []
+        actual_list = []
+        for event in event_list:
+            event_date = event.split(' - ')[1]
+            if future(event_date):
+
+                list_int.append(convert_to_int(obj.get_event(calendar_id=calendar_id, event_id=event_list.get(event))))
+                actual_list.append(obj.get_event(calendar_id=calendar_id, event_id=event_list.get(event)))
+
+
+                index = 1
+        if index == 0:
+            await bot.send_message(chat_id=admin_id[1], text='Записей нет.')
+            await bot.send_message(chat_id=admin_id[0], text='Записей нет.')
+        sort_list = sorted(list_int)
+        final_list = sort_actual_list(actual_list=actual_list, sort_list=sort_list)
+        print(final_list)
+        for eve in final_list:
+            event_date = f"{str(obj.get_event(calendar_id=calendar_id, event_id=eve.get('id'))['start']['dateTime']).split('T')[0].split('-')[2]}-" \
+                         f"{str(obj.get_event(calendar_id=calendar_id, event_id=eve.get('id'))['start']['dateTime']).split('T')[0].split('-')[1]}-" \
+                         f"{str(obj.get_event(calendar_id=calendar_id, event_id=eve.get('id'))['start']['dateTime']).split('T')[0].split('-')[0]}"
+            name = obj.get_event(calendar_id=calendar_id, event_id=eve.get("id"))['summary']
             procedura = \
-                str(obj.get_event(calendar_id=calendar_id, event_id=event_list.get(event))['description']).split(
-                    'Процедура: ')[1].split('\n')[0]
-            tg_id = str(obj.get_event(calendar_id=calendar_id, event_id=event_list.get(event))['description']).split(
-                'id клиента: ')[1]
-            time_event = f"{str(obj.get_event(calendar_id=calendar_id, event_id=event_list.get(event))['start']['dateTime']).split('T')[1].split(':')[0]}:" \
-                         f"{str(obj.get_event(calendar_id=calendar_id, event_id=event_list.get(event))['start']['dateTime']).split('T')[1].split(':')[1]}"
-            await bot.send_message(text=f'Здравствуйте! Напоминаем, что завтра Вы записаны на процедуру: {procedura}.'
-                                        f'\n\nВремя записи - {time_event}\n\nАдрес: г. Щёлково, микрорайон Потаповский, д.1, к.1, Beauty Space RAI\nТелефон для связи: +7(916)-261-43-01 ',
-                                   chat_id=tg_id)
-            print(str(obj.get_event(calendar_id=calendar_id, event_id=event_list.get(event))['description']))
-            print(str(obj.get_event(calendar_id=calendar_id, event_id=event_list.get(event))))
+                 str(obj.get_event(calendar_id=calendar_id, event_id=eve.get("id"))['description']).split(
+                     'Процедура: ')[1].split('\n')[0]
+            time_event = f"{str(obj.get_event(calendar_id=calendar_id, event_id=eve.get('id'))['start']['dateTime']).split('T')[1].split(':')[0]}:" \
+                         f"{str(obj.get_event(calendar_id=calendar_id, event_id=eve.get('id'))['start']['dateTime']).split('T')[1].split(':')[1]}"
+            await bot.send_message(chat_id=admin_id[1],
+                                  text=f'{event_date}\n{name}\n{time_event}')
+            await bot.send_message(chat_id=admin_id[0],
+                                   text=f'{event_date}\n{name}\n{procedura}\n{time_event}')
+
+
+
+
+
+
+
+    except:
+        await bot.send_message(chat_id=admin_id[1], text='Проверка календаря не выполнена')
+        await bot.send_message(chat_id=admin_id[0], text='Проверка календаря не выполнена')
 
 
 # УСЛУГИ
