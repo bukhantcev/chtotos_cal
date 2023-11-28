@@ -381,23 +381,25 @@ async def get_events(cb: CallbackQuery):
         if index == 0:
             await bot.send_message(chat_id=admin_id[1], text='Записей нет.')
             await bot.send_message(chat_id=admin_id[0], text='Записей нет.')
-        sort_list = sorted(list_int)
-        final_list = sort_actual_list(actual_list=actual_list, sort_list=sort_list)
-        print(final_list)
-        for eve in final_list:
-            event_date = f"{str(obj.get_event(calendar_id=calendar_id, event_id=eve.get('id'))['start']['dateTime']).split('T')[0].split('-')[2]}-" \
-                         f"{str(obj.get_event(calendar_id=calendar_id, event_id=eve.get('id'))['start']['dateTime']).split('T')[0].split('-')[1]}-" \
-                         f"{str(obj.get_event(calendar_id=calendar_id, event_id=eve.get('id'))['start']['dateTime']).split('T')[0].split('-')[0]}"
-            name = obj.get_event(calendar_id=calendar_id, event_id=eve.get("id"))['summary']
-            procedura = \
-                 str(obj.get_event(calendar_id=calendar_id, event_id=eve.get("id"))['description']).split(
-                     'Процедура: ')[1].split('\n')[0]
-            time_event = f"{str(obj.get_event(calendar_id=calendar_id, event_id=eve.get('id'))['start']['dateTime']).split('T')[1].split(':')[0]}:" \
-                         f"{str(obj.get_event(calendar_id=calendar_id, event_id=eve.get('id'))['start']['dateTime']).split('T')[1].split(':')[1]}"
-            await bot.send_message(chat_id=admin_id[1],
-                                  text=f'{event_date}\n{name}\n{time_event}')
-            await bot.send_message(chat_id=admin_id[0],
-                                   text=f'{event_date}\n{name}\n{procedura}\n{time_event}')
+
+        if index == 1:
+            sort_list = sorted(list_int)
+            final_list = sort_actual_list(actual_list=actual_list, sort_list=sort_list)
+            print(final_list)
+            for eve in final_list:
+                event_date = f"{str(obj.get_event(calendar_id=calendar_id, event_id=eve.get('id'))['start']['dateTime']).split('T')[0].split('-')[2]}-" \
+                             f"{str(obj.get_event(calendar_id=calendar_id, event_id=eve.get('id'))['start']['dateTime']).split('T')[0].split('-')[1]}-" \
+                             f"{str(obj.get_event(calendar_id=calendar_id, event_id=eve.get('id'))['start']['dateTime']).split('T')[0].split('-')[0]}"
+                name = obj.get_event(calendar_id=calendar_id, event_id=eve.get("id"))['summary']
+                procedura = \
+                     str(obj.get_event(calendar_id=calendar_id, event_id=eve.get("id"))['description']).split(
+                         'Процедура: ')[1].split('\n')[0]
+                time_event = f"{str(obj.get_event(calendar_id=calendar_id, event_id=eve.get('id'))['start']['dateTime']).split('T')[1].split(':')[0]}:" \
+                             f"{str(obj.get_event(calendar_id=calendar_id, event_id=eve.get('id'))['start']['dateTime']).split('T')[1].split(':')[1]}"
+                await bot.send_message(chat_id=admin_id[1],
+                                      text=f'{event_date}\n{name}\n{time_event}')
+                await bot.send_message(chat_id=admin_id[0],
+                                       text=f'{event_date}\n{name}\n{procedura}\n{time_event}')
 
 
 
