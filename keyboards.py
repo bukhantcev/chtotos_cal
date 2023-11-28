@@ -65,5 +65,8 @@ bt_stop_foto = KeyboardButton(text='Стоп')
 kb_stop_foto = ReplyKeyboardMarkup([[bt_stop_foto]], resize_keyboard=True)
 
 bt_get_event_list = InlineKeyboardButton(text='Посмотреть записи', callback_data='get_event_list')
+
+bt_add_sert = InlineKeyboardButton(text="Добавить сертификат", callback_data='add_sert')
 kb_get_event_list = InlineKeyboardMarkup(row_width=1)
 kb_get_event_list.row(bt_get_event_list)
+kb_get_event_list.row(bt_add_sert)

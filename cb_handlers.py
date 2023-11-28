@@ -362,6 +362,7 @@ async def kontakti(cb: CallbackQuery):
 @dp.callback_query_handler(text='get_event_list')
 async def get_events(cb: CallbackQuery):
     try:
+        await cb.answer('👌')
         calendar_id = '1dbae5a038d3414d565f0e8ba342c1fa018ceb2d3d5bd0245ec6f610b978a446@group.calendar.google.com'
         event_list = get_event_list(calendar_id=calendar_id)
         today_date = get_today()

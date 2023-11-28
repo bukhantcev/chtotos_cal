@@ -74,10 +74,11 @@ async def info(message: Message, state: FSMContext):
 
 
 # ДОБАВИТЬ СЕРТИФИКАТ
-@dp.message_handler(commands=['add_sert'], state=None)
-async def add_photo_sert(message: Message, state: FSMContext):
-    await message.answer(
-        'Пришли фото по одной, у последней добавь описание "Стоп". Также можно написать "Стоп" в сообщении.')
+@dp.callback_query_handler(text='add_sert', state=None)
+async def add_photo_sert(cb: CallbackQuery ,state: FSMContext):
+    await cb.answer('👌')
+    await bot.send_message(text=
+        'Пришли фото по одной, у последней добавь описание "Стоп". Также можно написать "Стоп" в сообщении.', chat_id=cb.from_user.id)
     await PhotoSertificate.photo_id.set()
 
 
@@ -104,7 +105,7 @@ async def get_photo_sert(message: Message, admin: bool, state: FSMContext):
 async def error(message: Message, state: FSMContext):
     if message.text != 'Стоп':
         await message.answer(
-            'Пришли фото по одной, у последней добавь описание "Стоп". Также можно написать "Стоп" в сообщении.')
+            'Пришли фото по одной. Когда закончишь, напиши слово "Стоп"')
         await PhotoSertificate.photo_id.set()
     else:
         await message.answer('Закончили упражнение!')
