@@ -5,18 +5,23 @@ import time
 
 def delete_foto(path:str):
 
-        folder = '/'.join(path.split('/')[:len(path.split('/'))-1])
-        file_name = path.split('/')[len(path.split('/'))-1].split('.')[0].split('_')[0]
-        file_type = path.split('/')[len(path.split('/'))-1].split('.')[1]
-        file_index = int(path.split('/')[len(path.split('/'))-1].split('.')[0].split('_')[1])
-        print(f'{folder}/{file_name}_{file_index}.{file_type}')
-        count = file_index
+        try:
 
-        os.remove(path)
-        time.sleep(1)
-        for file in os.listdir(folder)[file_index-1:]:
-            shutil.move(f'{folder}/{file_name}_{count+1}.{file_type}', f'{folder}/{file_name}_{count}.{file_type}')
-            count += 1
+                folder = '/'.join(path.split('/')[:len(path.split('/'))-1])
+                file_name = path.split('/')[len(path.split('/'))-1].split('.')[0].split('_')[0]
+                file_type = path.split('/')[len(path.split('/'))-1].split('.')[1]
+                file_index = int(path.split('/')[len(path.split('/'))-1].split('.')[0].split('_')[1])
+                print(f'{folder}/{file_name}_{file_index}.{file_type}')
+                count = file_index
+
+                os.remove(path)
+                if file_index <= len(os.listdir(folder)) and len(os.listdir(folder)) >= 1:
+                        for file in os.listdir(folder)[file_index-1:]:
+                            shutil.move(f'{folder}/{file_name}_{count+1}.{file_type}', f'{folder}/{file_name}_{count}.{file_type}')
+                            count += 1
+                return 'Файл удален'
+        except:
+                return "Файл не найден или папка пуста"
 
 
 
@@ -25,4 +30,5 @@ def delete_foto(path:str):
 
 
 
-# delete_foto('sertificat_file_test/sert_2.jpg')
+
+print(delete_foto('sertificat_file_test/sert_1.jpg'))
