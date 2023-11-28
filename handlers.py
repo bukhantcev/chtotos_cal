@@ -111,9 +111,10 @@ async def error(message: Message, state: FSMContext):
         await state.finish()
 
 
-@dp.message_handler(commands=['get_event_list'])
-async def get_event_l(message: Message):
-    await message.answer(text='Gmi', reply_markup=kb_get_event_list)
+@dp.message_handler(commands=['admin'])
+async def get_event_l(message: Message, admin: bool):
+    if admin:
+        await message.answer(text='Пока так', reply_markup=kb_get_event_list)
 
 
 @dp.message_handler(commands=['today'])
@@ -148,3 +149,6 @@ async def go_napominanie(message: Message, admin: bool):
         if index == 0:
             await bot.send_message(chat_id=admin_id[1], text='На сегодня записей нет.')
             await bot.send_message(chat_id=admin_id[0], text='На сегодня записей нет.')
+
+
+
