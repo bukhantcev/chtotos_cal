@@ -44,6 +44,7 @@ button_forward = InlineKeyboardButton(text='>>>', callback_data='go_forward')
 button_back = InlineKeyboardButton(text='<<<', callback_data='go_back')
 button_vozvrat_obo_mne = InlineKeyboardButton(text='-----Вернуться назад-----', callback_data='vozvrat_obo_mne')
 button_clear = InlineKeyboardButton(text=' ', callback_data='button_clear')
+button_del = InlineKeyboardButton(text='Удалить сертификат', callback_data='del_sert')
 button_set_nachalo = [
     [button_clear, button_forward],
     [button_vozvrat_obo_mne]
@@ -56,10 +57,29 @@ button_set_final = [
     [button_back, button_clear],
     [button_vozvrat_obo_mne]
 ]
+button_set_final_del = [
+    [button_back, button_clear],
+    [button_vozvrat_obo_mne],
+    [button_del]
+]
+button_set_seredina_del = [
+    [button_back, button_forward],
+    [button_vozvrat_obo_mne],
+    [button_del]
+]
+button_set_nachalo_del = [
+    [button_clear, button_forward],
+    [button_vozvrat_obo_mne],
+    [button_del]
+]
+
 
 kb_sert_nachalo = InlineKeyboardMarkup(inline_keyboard=button_set_nachalo)
 kb_sert_seredina = InlineKeyboardMarkup(inline_keyboard=button_set_seredina)
 kb_sert_final = InlineKeyboardMarkup(inline_keyboard=button_set_final)
+kb_sert_nachalo_del = InlineKeyboardMarkup(inline_keyboard=button_set_nachalo_del)
+kb_sert_seredina_del = InlineKeyboardMarkup(inline_keyboard=button_set_seredina_del)
+kb_sert_final_del = InlineKeyboardMarkup(inline_keyboard=button_set_final_del)
 
 bt_stop_foto = KeyboardButton(text='Стоп')
 kb_stop_foto = ReplyKeyboardMarkup([[bt_stop_foto]], resize_keyboard=True)

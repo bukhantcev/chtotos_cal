@@ -3,7 +3,7 @@ import os
 import pprint
 import pprint
 from datetime import datetime
-
+from delete_foto import delete_foto
 from aiogram import Dispatcher
 from convert_to_int import convert_to_int, sort_actual_list
 from delete_dot import delete_dot
@@ -16,7 +16,7 @@ from keyboards import kb_mainmenu, kb_stop
 from loader import dp, bot
 from text_welcome import text_welcome
 from text_obomne import text_obomne
-from keyboards import kb_mainmenu, kb_back_to_uslugi, sert_kb, kb_sert_seredina, kb_sert_final, kb_sert_nachalo
+from keyboards import kb_mainmenu, kb_back_to_uslugi, sert_kb, kb_sert_seredina, kb_sert_final, kb_sert_nachalo, kb_sert_final_del, kb_sert_nachalo_del, kb_sert_seredina_del
 from text_uslugi import text_uslugi
 from db_config import cursor, find_idproceduri, find_procedura, connect, add_new_klient, update_klient, \
     find_name_procedure, update_photo_sertificate
@@ -294,7 +294,7 @@ async def view_sertificate(cb: CallbackQuery, state: FSMContext):
 
 
 # СЕРТИФИКАТЫ ВПЕРЕД/НАЗАД/ВЫХОД
-@dp.callback_query_handler(text=['go_forward', 'go_back', 'vozvrat_obo_mne', 'button_clear'], state=Count.next_count)
+@dp.callback_query_handler(text=['go_forward', 'go_back', 'vozvrat_obo_mne', 'button_clear', 'del_sert'], state=Count.next_count)
 async def view_sertificate(cb: CallbackQuery, state: FSMContext):
     global new_data
     if cb.data == 'go_forward':
@@ -318,12 +318,13 @@ async def view_sertificate(cb: CallbackQuery, state: FSMContext):
                 await state.update_data({'next_count': data.get('next_count') - 1})
                 new_data = await state.get_data()
     if new_data.get('next_count') == 1:
-        kb = kb_sert_nachalo
+        kb = kb_sert_nachalo_del if cb.from_user.id in admin_id else kb_sert_nachalo
     elif new_data.get('next_count') == len(os.listdir('sertificat_file')):
-        kb = kb_sert_final
+        kb = kb_sert_final_del if cb.from_user.id in admin_id else kb_sert_final
     else:
-        kb = kb_sert_seredina
+        kb = kb_sert_seredina_del if cb.from_user.id in admin_id else kb_sert_seredina
     if 0 < new_data.get('next_count') <= len(os.listdir('sertificat_file')):
+        path = (f"sertificat_file/sert_{new_data.get('next_count')}.jpg")
         with open(f"sertificat_file/sert_{new_data.get('next_count')}.jpg", 'rb') as file:
             try:
                 photo = InputMediaPhoto(file)
@@ -331,6 +332,9 @@ async def view_sertificate(cb: CallbackQuery, state: FSMContext):
                                              reply_markup=kb)
             except:
                 pass
+        if cb.data ==  'del_sert':
+            await bot.answer_callback_query(callback_query_id=cb.id, text=f"Чтобы удалить этот сертификат, отправь 'Удалить {path.split('/')[len(path.split('/'))-1]}'", show_alert=True)
+
     if cb.data == 'vozvrat_obo_mne':
         await cb.answer('👌')
         await state.finish()
@@ -339,6 +343,15 @@ async def view_sertificate(cb: CallbackQuery, state: FSMContext):
                                reply_markup=kb_mainmenu)
     if cb.data == 'button_clear':
         await cb.answer('👌')
+
+@dp.message_handler(state=Count.next_count)
+async def delete_final(message:Message, state:FSMContext):
+    try:
+        if 'Удалить sert_' in message.text:
+            print(delete_foto(f"sertificat_file/{message.text.split(' ')[1]}"))
+    except:
+        print('Не удалось!')
+
 
 
 @dp.callback_query_handler(text='raboti')
@@ -358,7 +371,7 @@ async def kontakti(cb: CallbackQuery):
     await bot.send_message(chat_id=cb.message.chat.id, text=text_kontacts,reply_markup=kb_mainmenu)
 
 
-
+#ПОЛУЧЕНИЕ СПИСКА АКТИВНЫХ ЗАПИСЕЙ
 @dp.callback_query_handler(text='get_event_list')
 async def get_events(cb: CallbackQuery):
     try:
@@ -413,7 +426,11 @@ async def get_events(cb: CallbackQuery):
         await bot.send_message(chat_id=admin_id[0], text='Проверка календаря не выполнена')
 
 
-# УСЛУГИ
+
+
+
+
+# УСЛУГИ ВСЕГДА НА ПОСЛЕДНЕМ МЕСТЕ!!!
 @dp.callback_query_handler()
 async def print_commands(cb: CallbackQuery):
     command = cb.data
