@@ -1,3 +1,5 @@
+import os
+
 from aiogram.types import KeyboardButton, InlineKeyboardButton, ReplyKeyboardMarkup, InlineKeyboardMarkup, \
     KeyboardButtonRequestUser
 
@@ -90,3 +92,15 @@ bt_add_sert = InlineKeyboardButton(text="Добавить сертификат",
 kb_get_event_list = InlineKeyboardMarkup(row_width=1)
 kb_get_event_list.row(bt_get_event_list)
 kb_get_event_list.row(bt_add_sert)
+
+
+
+list_raboti = []
+
+for dir in os.listdir('raboti'):
+    list_raboti.append([InlineKeyboardButton(text=dir, callback_data=dir)])
+kb_raboti = InlineKeyboardMarkup(row_width=1, inline_keyboard=list_raboti)
+
+
+bt_back_raboti = InlineKeyboardButton(text='Назад к работам', callback_data='raboti')
+kb_back_raboti = InlineKeyboardMarkup(row_width=1).row(bt_back_raboti)

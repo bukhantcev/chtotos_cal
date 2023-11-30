@@ -9,10 +9,10 @@ from convert_to_int import convert_to_int, sort_actual_list
 from delete_dot import delete_dot
 from google_cal import GoogleCalendar, get_event_list
 from aiogram.types import Message, CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton, InputFile, ContentType, \
-    ReplyKeyboardRemove, ReplyKeyboardMarkup, KeyboardButton, Contact, InputMediaPhoto
+    ReplyKeyboardRemove, ReplyKeyboardMarkup, KeyboardButton, Contact, InputMediaPhoto, MediaGroup
 from keyboards_cal import cal_kb, create_day_table, kb_creat_event
 from db_config import add_new_procedura, find_procedura, delete_procedura
-from keyboards import kb_mainmenu, kb_stop
+from keyboards import kb_mainmenu, kb_stop, kb_raboti, kb_back_raboti
 from loader import dp, bot
 from text_welcome import text_welcome
 from text_obomne import text_obomne
@@ -20,7 +20,7 @@ from keyboards import kb_mainmenu, kb_back_to_uslugi, sert_kb, kb_sert_seredina,
 from text_uslugi import text_uslugi
 from db_config import cursor, find_idproceduri, find_procedura, connect, add_new_klient, update_klient, \
     find_name_procedure, update_photo_sertificate
-from fsm import NewItem, CalendarBt, Count
+from fsm import NewItem, CalendarBt, Count, Raboti
 from aiogram.dispatcher import FSMContext
 from klients import Klients
 from master_id import master_id
@@ -354,9 +354,46 @@ async def delete_final(message:Message, state:FSMContext):
 
 
 
-@dp.callback_query_handler(text='raboti')
-async def raboti(cb: CallbackQuery):
-    await cb.answer('...Раздел находится в разработке...')
+@dp.callback_query_handler(text='raboti', state=None)
+async def raboti(cb: CallbackQuery, state:FSMContext):
+    await cb.answer('👌')
+    await bot.delete_message(chat_id=cb.from_user.id, message_id=cb.message.message_id)
+    await bot.send_message(chat_id=cb.from_user.id, text='--------Выберите раздел:--------', reply_markup=kb_raboti)
+    await Raboti.raboti_state.set()
+
+@dp.callback_query_handler(text='raboti', state=Raboti.raboti_state)
+async def raboti(cb: CallbackQuery, state:FSMContext):
+    await cb.answer('👌')
+    try:
+        count = 1
+        while True:
+            await bot.delete_message(chat_id=cb.from_user.id, message_id=cb.message.message_id-count)
+            count += 1
+    except:
+        await bot.delete_message(chat_id=cb.from_user.id, message_id=cb.message.message_id)
+        await bot.send_message(chat_id=cb.from_user.id, text='--------Выберите раздел:--------', reply_markup=kb_raboti)
+
+
+@dp.callback_query_handler(text=os.listdir('raboti'), state=Raboti.raboti_state)
+async def view_raboti(cb:CallbackQuery, state:FSMContext):
+    path_dir = f'raboti/{cb.data}'
+    media = MediaGroup()
+    if len(os.listdir(path_dir)) > 0:
+        if len(os.listdir(path_dir)) > 1:
+            for file in os.listdir(path_dir):
+                media.attach_photo(photo=InputFile(f'{path_dir}/{file}'), caption=file if cb.from_user.id in admin_id else None) if file.split('.')[1] == 'jpg' else \
+                    media.attach_video(video=InputFile(f'{path_dir}/{file}'), caption=file if cb.from_user.id in admin_id else None)
+            await bot.delete_message(chat_id=cb.from_user.id, message_id=cb.message.message_id)
+            await cb.answer(text='Загружаю файл.....')
+
+            await bot.send_media_group(chat_id=cb.from_user.id, media=media)
+            await bot.send_message(chat_id=cb.from_user.id, text=cb.data, reply_markup=kb_back_raboti)
+        else:
+            for file in os.listdir(path_dir):
+                await bot.delete_message(chat_id=cb.from_user.id, message_id=cb.message.message_id)
+                await cb.answer(text='Загружаю файл.....')
+                await bot.send_photo(chat_id=cb.from_user.id, photo=InputFile(f'{path_dir}/{file}'), caption=file if cb.from_user.id in admin_id else None) if file.split('.')[1] == 'jpg' else await bot.send_video(chat_id=cb.from_user.id, video=InputFile(f'{path_dir}/{file}'), caption=file if cb.from_user.id in admin_id else None)
+                await bot.send_message(chat_id=cb.from_user.id, text=cb.data, reply_markup=kb_back_raboti)
 
 
 @dp.callback_query_handler(text='otzivi')
@@ -414,12 +451,6 @@ async def get_events(cb: CallbackQuery):
                                       text=f'{event_date}\n{name}\n{time_event}')
                 await bot.send_message(chat_id=admin_id[0],
                                        text=f'{event_date}\n{name}\n{procedura}\n{time_event}')
-
-
-
-
-
-
 
     except:
         await bot.send_message(chat_id=admin_id[1], text='Проверка календаря не выполнена')

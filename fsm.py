@@ -25,3 +25,6 @@ class Count(StatesGroup):
     current_count = State()
     next_count = State()
     final = State()
+
+class Raboti(StatesGroup):
+    raboti_state = State()
