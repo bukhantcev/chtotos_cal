@@ -12,7 +12,7 @@ from aiogram.types import Message, CallbackQuery, InlineKeyboardMarkup, InlineKe
     ReplyKeyboardRemove, ReplyKeyboardMarkup, KeyboardButton, Contact, InputMediaPhoto, MediaGroup
 from keyboards_cal import cal_kb, create_day_table, kb_creat_event
 from db_config import add_new_procedura, find_procedura, delete_procedura
-from keyboards import kb_mainmenu, kb_stop, kb_raboti, kb_back_raboti
+from keyboards import kb_mainmenu, kb_stop, kb_raboti, kb_back_raboti, kb_menu_solo
 from loader import dp, bot
 from text_welcome import text_welcome
 from text_obomne import text_obomne
@@ -274,8 +274,8 @@ async def calendar_month(cb: CallbackQuery, state: FSMContext):
 # ВОЗВРАТ В ГЛАВНОЕ МЕНЮ
 @dp.callback_query_handler(text='back_to_main_menu')
 async def info(cb: CallbackQuery):
-    await bot.edit_message_text(text='-------------ГЛАВНОЕ МЕНЮ-------------', chat_id=cb.from_user.id,
-                                message_id=cb.message.message_id, reply_markup=kb_mainmenu)
+    await bot.delete_message(chat_id=cb.from_user.id, message_id=cb.message.message_id)
+    await bot.send_message(text='-------------ГЛАВНОЕ МЕНЮ-------------', chat_id=cb.from_user.id, reply_markup=kb_mainmenu)
 
 
 # ПОКАЗАТЬ СЕРТИФИКАТЫ
@@ -357,7 +357,13 @@ async def delete_final(message:Message, state:FSMContext):
 @dp.callback_query_handler(text='raboti', state=None)
 async def raboti(cb: CallbackQuery, state:FSMContext):
     await cb.answer('👌')
-    await bot.delete_message(chat_id=cb.from_user.id, message_id=cb.message.message_id)
+    try:
+        count = 1
+        while True:
+            await bot.delete_message(chat_id=cb.from_user.id, message_id=cb.message.message_id-count)
+            count += 1
+    except:
+        await bot.delete_message(chat_id=cb.from_user.id, message_id=cb.message.message_id)
     await bot.send_message(chat_id=cb.from_user.id, text='--------Выберите раздел:--------', reply_markup=kb_raboti)
     await Raboti.raboti_state.set()
 
@@ -381,6 +387,7 @@ async def view_raboti(cb:CallbackQuery, state:FSMContext):
     if len(os.listdir(path_dir)) > 0:
         if len(os.listdir(path_dir)) > 1:
             for file in os.listdir(path_dir):
+                await state.update_data({'raboti_state': path_dir})
                 media.attach_photo(photo=InputFile(f'{path_dir}/{file}'), caption=file if cb.from_user.id in admin_id else None) if file.split('.')[1] == 'jpg' else \
                     media.attach_video(video=InputFile(f'{path_dir}/{file}'), caption=file if cb.from_user.id in admin_id else None)
             await bot.delete_message(chat_id=cb.from_user.id, message_id=cb.message.message_id)
@@ -395,6 +402,17 @@ async def view_raboti(cb:CallbackQuery, state:FSMContext):
                 await bot.send_photo(chat_id=cb.from_user.id, photo=InputFile(f'{path_dir}/{file}'), caption=file if cb.from_user.id in admin_id else None) if file.split('.')[1] == 'jpg' else await bot.send_video(chat_id=cb.from_user.id, video=InputFile(f'{path_dir}/{file}'), caption=file if cb.from_user.id in admin_id else None)
                 await bot.send_message(chat_id=cb.from_user.id, text=cb.data, reply_markup=kb_back_raboti)
 
+@dp.message_handler(state=Raboti.raboti_state)
+async def delete_file(message:Message, state:FSMContext):
+    data = await state.get_data()
+    try:
+        if 'удалить ' in message.text.lower():
+
+            delete_foto(f'{data["raboti_state"]}/{message.text.split(" ")[1]}')
+            await bot.send_message(chat_id=message.from_user.id, text='Файл удален!!!')
+    except:
+        await bot.send_message(chat_id=message.from_user.id, text='Файл не удален!!! Попробуй еще раз!')
+
 
 @dp.callback_query_handler(text='otzivi')
 async def otzivi(cb: CallbackQuery):
@@ -404,8 +422,9 @@ async def otzivi(cb: CallbackQuery):
 @dp.callback_query_handler(text='kontakti')
 async def kontakti(cb: CallbackQuery):
     await cb.answer('👌')
+    await bot.delete_message(chat_id=cb.from_user.id, message_id=cb.message.message_id)
     await bot.send_location(chat_id=cb.message.chat.id, latitude=55.909554, longitude=38.050749)
-    await bot.send_message(chat_id=cb.message.chat.id, text=text_kontacts,reply_markup=kb_mainmenu)
+    await bot.send_message(chat_id=cb.message.chat.id, text=text_kontacts, reply_markup=kb_menu_solo)
 
 
 #ПОЛУЧЕНИЕ СПИСКА АКТИВНЫХ ЗАПИСЕЙ

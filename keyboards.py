@@ -41,6 +41,7 @@ back_to_main_menu = InlineKeyboardButton(text='Вернуться в главн�
 sert_kb = InlineKeyboardMarkup(row_width=1)
 sert_kb.row(sert_bt)
 sert_kb.row(back_to_main_menu)
+kb_menu_solo=InlineKeyboardMarkup(row_width=1).row(back_to_main_menu)
 
 button_forward = InlineKeyboardButton(text='>>>', callback_data='go_forward')
 button_back = InlineKeyboardButton(text='<<<', callback_data='go_back')
@@ -104,3 +105,8 @@ kb_raboti = InlineKeyboardMarkup(row_width=1, inline_keyboard=list_raboti)
 
 bt_back_raboti = InlineKeyboardButton(text='Назад к работам', callback_data='raboti')
 kb_back_raboti = InlineKeyboardMarkup(row_width=1).row(bt_back_raboti)
+
+
+bt_main_menu = KeyboardButton(text='/main_menu')
+kb_main = ReplyKeyboardMarkup(resize_keyboard=True)
+kb_main.add(bt_main_menu)

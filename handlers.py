@@ -10,7 +10,7 @@ from fsm import PhotoSertificate
 from keyboards_cal import cal_kb
 from db_config import add_new_procedura, find_procedura, delete_procedura, add_new_klient, update_klient, connect, \
     cursor, add_new_sert
-from keyboards import kb_mainmenu, kb_get_event_list
+from keyboards import kb_mainmenu, kb_get_event_list, kb_main
 from klients import Klients
 from loader import dp, bot
 from text_welcome import text_welcome
