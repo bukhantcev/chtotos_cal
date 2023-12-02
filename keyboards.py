@@ -104,7 +104,10 @@ kb_raboti = InlineKeyboardMarkup(row_width=1, inline_keyboard=list_raboti)
 
 
 bt_back_raboti = InlineKeyboardButton(text='Назад к работам', callback_data='raboti')
+bt_add_raboti = InlineKeyboardButton(text='Добавить файл', callback_data='add_file_raboti')
+bt_delete_raboti = InlineKeyboardButton(text='Удалить файл', callback_data='delete_file_raboti')
 kb_back_raboti = InlineKeyboardMarkup(row_width=1).row(bt_back_raboti)
+kb_raboti_admin = InlineKeyboardMarkup(row_width=1, inline_keyboard=[[bt_back_raboti],[bt_add_raboti], [bt_delete_raboti]])
 
 
 bt_main_menu = KeyboardButton(text='/main_menu')

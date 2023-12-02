@@ -12,7 +12,7 @@ from aiogram.types import Message, CallbackQuery, InlineKeyboardMarkup, InlineKe
     ReplyKeyboardRemove, ReplyKeyboardMarkup, KeyboardButton, Contact, InputMediaPhoto, MediaGroup
 from keyboards_cal import cal_kb, create_day_table, kb_creat_event
 from db_config import add_new_procedura, find_procedura, delete_procedura
-from keyboards import kb_mainmenu, kb_stop, kb_raboti, kb_back_raboti, kb_menu_solo
+from keyboards import kb_mainmenu, kb_stop, kb_raboti, kb_back_raboti, kb_menu_solo, kb_raboti_admin
 from loader import dp, bot
 from text_welcome import text_welcome
 from text_obomne import text_obomne
@@ -393,8 +393,10 @@ async def raboti(cb: CallbackQuery, state:FSMContext):
 
 @dp.callback_query_handler(text=os.listdir('raboti'), state=Raboti.raboti_state)
 async def view_raboti(cb:CallbackQuery, state:FSMContext):
+    await state.update_data({'raboti_state': cb.data})
     path_dir = f'raboti/{cb.data}'
     media = MediaGroup()
+    kb = kb_raboti_admin if cb.from_user.id in admin_id else kb_back_raboti
     if len(os.listdir(path_dir)) > 0:
         if len(os.listdir(path_dir)) > 1:
             for file in os.listdir(path_dir):
@@ -405,13 +407,49 @@ async def view_raboti(cb:CallbackQuery, state:FSMContext):
             await cb.answer(text='Загружаю файл.....')
 
             await bot.send_media_group(chat_id=cb.from_user.id, media=media)
-            await bot.send_message(chat_id=cb.from_user.id, text=cb.data, reply_markup=kb_back_raboti)
+            await bot.send_message(chat_id=cb.from_user.id, text=cb.data, reply_markup=kb)
         else:
             for file in os.listdir(path_dir):
                 await bot.delete_message(chat_id=cb.from_user.id, message_id=cb.message.message_id)
                 await cb.answer(text='Загружаю файл.....')
                 await bot.send_photo(chat_id=cb.from_user.id, photo=InputFile(f'{path_dir}/{file}'), caption=file if cb.from_user.id in admin_id else None) if file.split('.')[1] == 'jpg' else await bot.send_video(chat_id=cb.from_user.id, video=InputFile(f'{path_dir}/{file}'), caption=file if cb.from_user.id in admin_id else None)
-                await bot.send_message(chat_id=cb.from_user.id, text=cb.data, reply_markup=kb_back_raboti)
+                await bot.send_message(chat_id=cb.from_user.id, text=cb.data, reply_markup=kb)
+
+@dp.message_handler(content_types=['photo', 'video'], state=Raboti.raboti_state)
+async def add_photo_raboti(message:Message, state:FSMContext):
+    try:
+        if message.from_user.id in admin_id:
+            data = await state.get_data()
+            try:
+                name = str(data.get('raboti_state')).split('/')[1]
+            except:
+                name = data.get('raboti_state')
+            print(data.get('raboti_state'))
+
+            if len(os.listdir(f'raboti/{name}')) < 10:
+                if 'photo' in message:
+                    await message.photo[-1].download(destination_file=f'raboti/{name}/'
+                                                                      f'{str(os.listdir(f"raboti/{name}")[0]).split("_")[0]}_'
+                                                                      f'{len(os.listdir(f"raboti/{name}"))+1}.jpg')
+                if 'video' in message:
+                    await message.video.download(destination_file=f'raboti/{name}/'
+                                                                      f'{str(os.listdir(f"raboti/{name}")[0]).split("_")[0]}_'
+                                                                      f'{len(os.listdir(f"raboti/{name}")) + 1}.mp4')
+
+                await message.answer(f"Файл добавлен в папку {name}")
+            else:
+                await message.answer('Максимальное количество файлов - 10, придется что-то удалить((')
+
+    except:
+        await message.answer('Что-то пошло не так!')
+
+@dp.callback_query_handler(text=['add_file_raboti', 'delete_file_raboti'], state=Raboti.raboti_state)
+async def admin_raboti(cb:CallbackQuery, state:FSMContext):
+    if cb.data == 'add_file_raboti':
+        await cb.answer(text='Отравь фото или видео боту!', show_alert=True)
+    if cb.data == 'delete_file_raboti':
+        await cb.answer(text='Отправь сообщение Удалить (название файла). Название файла можно скопировать.', show_alert=True)
+
 
 @dp.message_handler(state=Raboti.raboti_state)
 async def delete_file(message:Message, state:FSMContext):

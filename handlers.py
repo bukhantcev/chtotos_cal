@@ -19,6 +19,7 @@ import asyncio
 from middleware.config import admin_id
 
 
+
 # СТАРТ
 @dp.message_handler(commands=['start'])
 async def start(message: Message, admin: bool):
@@ -117,6 +118,10 @@ async def error(message: Message, state: FSMContext):
 async def get_event_l(message: Message, admin: bool):
     if admin:
         await message.answer(text='Пока так', reply_markup=kb_get_event_list)
+
+
+
+
 
 
 @dp.message_handler(commands=['today'])
