@@ -289,52 +289,59 @@ async def view_sertificate(cb: CallbackQuery, state: FSMContext):
     await bot.delete_message(chat_id=cb.from_user.id, message_id=cb.message.message_id)
     await bot.send_photo(chat_id=cb.from_user.id, photo=file, reply_markup=kb_sert_nachalo)
     await Count.next_count.set()
-    global new_data
-    new_data = {'next_count': 1}
 
 
 # СЕРТИФИКАТЫ ВПЕРЕД/НАЗАД/ВЫХОД
 @dp.callback_query_handler(text=['go_forward', 'go_back', 'vozvrat_obo_mne', 'button_clear', 'del_sert'], state=Count.next_count)
 async def view_sertificate(cb: CallbackQuery, state: FSMContext):
-    global new_data
+    start_state = await state.get_data()
+    if start_state.get('next_count') == None:
+        await state.update_data({'next_count':os.listdir('sertificat_file')[0]})
+    start_state = await state.get_data()
+    file_index = int(str(start_state.get('next_count')).split('_')[1].split('.')[0])
     if cb.data == 'go_forward':
+        file_index += 1
         await cb.answer('👌')
-        data = await state.get_data()
-        if data.get('next_count') == None:
-            await state.update_data({'next_count': 2})
-            new_data = await state.get_data()
+        if file_index == 1:
+            kb = kb_sert_nachalo_del if cb.from_user.id in admin_id else kb_sert_nachalo
+
+        elif file_index == len(os.listdir('sertificat_file')):
+            kb = kb_sert_final_del if cb.from_user.id in admin_id else kb_sert_final
         else:
-            if new_data.get('next_count') < len(os.listdir('sertificat_file')):
-                await state.update_data({'next_count': data.get('next_count') + 1})
-                new_data = await state.get_data()
+            kb = kb_sert_seredina_del if cb.from_user.id in admin_id else kb_sert_seredina
+        if file_index <= len(os.listdir('sertificat_file'))+1:
+            path = (f"sertificat_file/sert_{file_index}.jpg")
+            with open(path, 'rb') as file:
+                try:
+                    photo = InputMediaPhoto(file, caption=f'sert_{file_index}.jpg' if cb.from_user.id in admin_id else None)
+                    await bot.edit_message_media(chat_id=cb.message.chat.id, message_id=cb.message.message_id,
+                                                 media=photo,
+                                                 reply_markup=kb)
+                    await state.update_data({'next_count': f'sert_{file_index}.jpg'})
+
+                except:
+                    pass
     if cb.data == 'go_back':
         await cb.answer('👌')
-        data = await state.get_data()
-        if data.get('next_count') == None:
-            await state.update_data({'next_count': 1})
-            new_data = await state.get_data()
+        file_index -= 1
+        if file_index == 1:
+            kb = kb_sert_nachalo_del if cb.from_user.id in admin_id else kb_sert_nachalo
+        elif file_index == len(os.listdir('sertificat_file')):
+            kb = kb_sert_final_del if cb.from_user.id in admin_id else kb_sert_final
         else:
-            if new_data.get('next_count') > 1:
-                await state.update_data({'next_count': data.get('next_count') - 1})
-                new_data = await state.get_data()
-    if new_data.get('next_count') == 1:
-        kb = kb_sert_nachalo_del if cb.from_user.id in admin_id else kb_sert_nachalo
-    elif new_data.get('next_count') == len(os.listdir('sertificat_file')):
-        kb = kb_sert_final_del if cb.from_user.id in admin_id else kb_sert_final
-    else:
-        kb = kb_sert_seredina_del if cb.from_user.id in admin_id else kb_sert_seredina
-    if 0 < new_data.get('next_count') <= len(os.listdir('sertificat_file')):
-        path = (f"sertificat_file/sert_{new_data.get('next_count')}.jpg")
-        with open(f"sertificat_file/sert_{new_data.get('next_count')}.jpg", 'rb') as file:
-            try:
-                photo = InputMediaPhoto(file)
-                await bot.edit_message_media(chat_id=cb.message.chat.id, message_id=cb.message.message_id, media=photo,
-                                             reply_markup=kb)
-            except:
-                pass
-        if cb.data ==  'del_sert':
-            await bot.answer_callback_query(callback_query_id=cb.id, text=f"Чтобы удалить этот сертификат, отправь 'Удалить {path.split('/')[len(path.split('/'))-1]}'", show_alert=True)
+            kb = kb_sert_seredina_del if cb.from_user.id in admin_id else kb_sert_seredina
+        if file_index >= 1:
+            path = (f"sertificat_file/sert_{file_index}.jpg")
+            with open(path, 'rb') as file:
+                try:
+                    photo = InputMediaPhoto(file, caption=f'sert_{file_index}.jpg' if cb.from_user.id in admin_id else None)
+                    await bot.edit_message_media(chat_id=cb.message.chat.id, message_id=cb.message.message_id,
+                                                 media=photo,
+                                                 reply_markup=kb)
+                    await state.update_data({'next_count': f'sert_{file_index}.jpg'})
 
+                except:
+                    pass
     if cb.data == 'vozvrat_obo_mne':
         await cb.answer('👌')
         await state.finish()
@@ -343,14 +350,18 @@ async def view_sertificate(cb: CallbackQuery, state: FSMContext):
                                reply_markup=kb_mainmenu)
     if cb.data == 'button_clear':
         await cb.answer('👌')
+    if cb.data == 'del_sert':
+        await cb.answer(text='Скопируй название файла и отправь его боту!', show_alert=True)
+
 
 @dp.message_handler(state=Count.next_count)
 async def delete_final(message:Message, state:FSMContext):
-    try:
-        if 'Удалить sert_' in message.text:
-            print(delete_foto(f"sertificat_file/{message.text.split(' ')[1]}"))
-    except:
-        print('Не удалось!')
+    if message.from_user.id in admin_id:
+        try:
+            if message.text in os.listdir('sertificat_file'):
+                print(delete_foto(f"sertificat_file/{message.text}"))
+        except:
+            print('Не удалось!')
 
 
 
@@ -404,14 +415,15 @@ async def view_raboti(cb:CallbackQuery, state:FSMContext):
 
 @dp.message_handler(state=Raboti.raboti_state)
 async def delete_file(message:Message, state:FSMContext):
-    data = await state.get_data()
-    try:
-        if 'удалить ' in message.text.lower():
+    if message.from_user.id in admin_id:
+        data = await state.get_data()
+        try:
+            if 'удалить ' in message.text.lower():
 
-            delete_foto(f'{data["raboti_state"]}/{message.text.split(" ")[1]}')
-            await bot.send_message(chat_id=message.from_user.id, text='Файл удален!!!')
-    except:
-        await bot.send_message(chat_id=message.from_user.id, text='Файл не удален!!! Попробуй еще раз!')
+                delete_foto(f'{data["raboti_state"]}/{message.text.split(" ")[1]}')
+                await bot.send_message(chat_id=message.from_user.id, text='Файл удален!!!')
+        except:
+            await bot.send_message(chat_id=message.from_user.id, text='Файл не удален!!! Попробуй еще раз!')
 
 
 @dp.callback_query_handler(text='otzivi')

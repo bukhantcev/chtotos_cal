@@ -86,19 +86,20 @@ async def add_photo_sert(cb: CallbackQuery ,state: FSMContext):
 async def get_photo_sert(message: Message, admin: bool, state: FSMContext):
     if admin:
         date = os.listdir('sertificat_file')
-        print(message.caption)
-        if message.caption != 'Стоп':
-            if len(date) == 0:
-                await message.photo[-1].download(destination_file='sertificat_file/sert_1.jpg')
-                await PhotoSertificate.photo_id.set()
-            else:
-                name = f"sert_{len(date) + 1}"
-                await message.photo[-1].download(destination_file=f'sertificat_file/{name}.jpg')
-                print(date)
-                await PhotoSertificate.photo_id.set()
-        else:
-            await state.finish()
-            await message.answer('Фото добавлены!')
+        if len(date) != 0:
+            print(date)
+
+            for file in date:
+                file_index = int(file.split('_')[1].split('.')[0])
+                os.rename(f'sertificat_file/{file}', f'sertificat_file/new_{file_index}.jpg')
+            new_date = os.listdir('sertificat_file')
+            for file in new_date:
+                file_index = int(file.split('_')[1].split('.')[0])
+                os.rename(f'sertificat_file/{file}', f'sertificat_file/sert_{file_index+1}.jpg')
+
+        await message.photo[-1].download(destination_file='sertificat_file/sert_1.jpg')
+        await PhotoSertificate.photo_id.set()
+        await message.answer('Фото добавлено!')
 
 
 @dp.message_handler(state=PhotoSertificate.photo_id)
