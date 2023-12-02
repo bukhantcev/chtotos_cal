@@ -20,7 +20,7 @@ from keyboards import kb_mainmenu, kb_back_to_uslugi, sert_kb, kb_sert_seredina,
 from text_uslugi import text_uslugi
 from db_config import cursor, find_idproceduri, find_procedura, connect, add_new_klient, update_klient, \
     find_name_procedure, update_photo_sertificate
-from fsm import NewItem, CalendarBt, Count, Raboti
+from fsm import NewItem, CalendarBt, Count, Raboti, PhotoSertificate
 from aiogram.dispatcher import FSMContext
 from klients import Klients
 from master_id import master_id
@@ -148,7 +148,6 @@ async def calendar(cb: CallbackQuery):
         await CalendarBt.month.set()
         await bot.edit_message_reply_markup(chat_id=cb.from_user.id, message_id=cb.message.message_id,
                                             reply_markup=None)
-        print(digits(cb.message.text.split('.')[4]))
         new_data = ('in_work', digits(cb.message.text.split('.')[4]))
         update_klient(new_data, 'status_recording')
         connect.commit()
@@ -160,7 +159,6 @@ async def calendar_month(cb: CallbackQuery, state: FSMContext):
     await state.update_data({'month': cb.data})
     await cb.answer('👌')
     data = await state.get_data()
-    print(data.get('month'))
     days_bt_text = create_day_table(int(data.get('month').split('-')[1]))
     days_kb = InlineKeyboardMarkup(row_width=7, inline_keyboard=days_bt_text)
     await bot.send_message(chat_id=cb.from_user.id,
@@ -176,7 +174,6 @@ async def calendar_month(cb: CallbackQuery, state: FSMContext):
     await state.update_data({'day': cb.data})
     await cb.answer('👌')
     data = await state.get_data()
-    print(data.get('day'))
     await bot.send_message(chat_id=cb.from_user.id,
                            text=f'Выбрана дата: {data.get("day")}-{data.get("month").split("-")[1]}-{data.get("month").split("-")[0]}'
                                 f'\nВведи время:')
@@ -194,7 +191,6 @@ async def calendar_month(message: Message, state: FSMContext):
 
         await state.update_data({'time': message.text})
         data = await state.get_data()
-        print(data.get('time'))
         await message.answer(
             text=f'Выбрана дата: {data.get("day")}-{data.get("month").split("-")[1]}-{data.get("month").split("-")[0]}\nВремя: {data.get("time")}\nСоздать запись?',
             reply_markup=kb_creat_event)
@@ -209,7 +205,6 @@ async def calendar_month(message: Message, state: FSMContext):
 async def calendar_month(cb: CallbackQuery, state: FSMContext):
     await state.update_data({'final': cb.data})
     data = await state.get_data()
-    print(data.get('final'))
     if data.get('final') == 'event_no':
         await bot.send_message(chat_id=cb.from_user.id, text='Запись отменена!!!')
         await state.finish()
@@ -248,7 +243,6 @@ async def calendar_month(cb: CallbackQuery, state: FSMContext):
                 }
             }
             event = obj.add_event(calendar_id=calendar_id, body=event)
-            print(event.get('id'))
 
             await bot.edit_message_reply_markup(chat_id=cb.from_user.id, message_id=cb.message.message_id,
                                                 reply_markup=None)
@@ -360,6 +354,7 @@ async def delete_final(message:Message, state:FSMContext):
         try:
             if message.text in os.listdir('sertificat_file'):
                 print(delete_foto(f"sertificat_file/{message.text}"))
+                await message.answer("Фото удалено")
         except:
             print('Не удалось!')
 
@@ -424,7 +419,6 @@ async def add_photo_raboti(message:Message, state:FSMContext):
                 name = str(data.get('raboti_state')).split('/')[1]
             except:
                 name = data.get('raboti_state')
-            print(data.get('raboti_state'))
 
             if len(os.listdir(f'raboti/{name}')) < 10:
                 if 'photo' in message:
@@ -505,7 +499,6 @@ async def get_events(cb: CallbackQuery):
         if index == 1:
             sort_list = sorted(list_int)
             final_list = sort_actual_list(actual_list=actual_list, sort_list=sort_list)
-            print(final_list)
             for eve in final_list:
                 event_date = f"{str(obj.get_event(calendar_id=calendar_id, event_id=eve.get('id'))['start']['dateTime']).split('T')[0].split('-')[2]}-" \
                              f"{str(obj.get_event(calendar_id=calendar_id, event_id=eve.get('id'))['start']['dateTime']).split('T')[0].split('-')[1]}-" \
@@ -524,6 +517,8 @@ async def get_events(cb: CallbackQuery):
     except:
         await bot.send_message(chat_id=admin_id[1], text='Проверка календаря не выполнена')
         await bot.send_message(chat_id=admin_id[0], text='Проверка календаря не выполнена')
+
+
 
 
 

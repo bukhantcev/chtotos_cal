@@ -6,7 +6,7 @@ from aiogram.utils import exceptions
 
 from date_time import get_tomorow, get_today
 from google_cal import GoogleCalendar, get_event_list
-from fsm import PhotoSertificate
+from fsm import PhotoSertificate, Count
 from keyboards_cal import cal_kb
 from db_config import add_new_procedura, find_procedura, delete_procedura, add_new_klient, update_klient, connect, \
     cursor, add_new_sert
@@ -75,7 +75,7 @@ async def info(message: Message, state: FSMContext):
 
 
 # ДОБАВИТЬ СЕРТИФИКАТ
-@dp.callback_query_handler(text='add_sert', state=None)
+@dp.callback_query_handler(text='add_sert', state=Count.next_count)
 async def add_photo_sert(cb: CallbackQuery ,state: FSMContext):
     await cb.answer('👌')
     await bot.send_message(text=
@@ -88,7 +88,6 @@ async def get_photo_sert(message: Message, admin: bool, state: FSMContext):
     if admin:
         date = os.listdir('sertificat_file')
         if len(date) != 0:
-            print(date)
 
             for file in date:
                 file_index = int(file.split('_')[1].split('.')[0])
@@ -101,6 +100,7 @@ async def get_photo_sert(message: Message, admin: bool, state: FSMContext):
         await message.photo[-1].download(destination_file='sertificat_file/sert_1.jpg')
         await PhotoSertificate.photo_id.set()
         await message.answer('Фото добавлено!')
+        await Count.next_count.set()
 
 
 @dp.message_handler(state=PhotoSertificate.photo_id)

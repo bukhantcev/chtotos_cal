@@ -48,6 +48,7 @@ button_back = InlineKeyboardButton(text='<<<', callback_data='go_back')
 button_vozvrat_obo_mne = InlineKeyboardButton(text='-----Вернуться назад-----', callback_data='vozvrat_obo_mne')
 button_clear = InlineKeyboardButton(text=' ', callback_data='button_clear')
 button_del = InlineKeyboardButton(text='Удалить сертификат', callback_data='del_sert')
+bt_add_sert = InlineKeyboardButton(text="Добавить сертификат", callback_data='add_sert')
 button_set_nachalo = [
     [button_clear, button_forward],
     [button_vozvrat_obo_mne]
@@ -63,17 +64,20 @@ button_set_final = [
 button_set_final_del = [
     [button_back, button_clear],
     [button_vozvrat_obo_mne],
-    [button_del]
+    [button_del],
+    [bt_add_sert]
 ]
 button_set_seredina_del = [
     [button_back, button_forward],
     [button_vozvrat_obo_mne],
-    [button_del]
+    [button_del],
+    [bt_add_sert]
 ]
 button_set_nachalo_del = [
     [button_clear, button_forward],
     [button_vozvrat_obo_mne],
-    [button_del]
+    [button_del],
+    [bt_add_sert]
 ]
 
 
@@ -89,10 +93,10 @@ kb_stop_foto = ReplyKeyboardMarkup([[bt_stop_foto]], resize_keyboard=True)
 
 bt_get_event_list = InlineKeyboardButton(text='Посмотреть записи', callback_data='get_event_list')
 
-bt_add_sert = InlineKeyboardButton(text="Добавить сертификат", callback_data='add_sert')
+
 kb_get_event_list = InlineKeyboardMarkup(row_width=1)
 kb_get_event_list.row(bt_get_event_list)
-kb_get_event_list.row(bt_add_sert)
+
 
 
 

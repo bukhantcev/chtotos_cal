@@ -8,7 +8,6 @@ def rename_file(dir:str):
 
     for i in range(len(file_list)):
         name_space = f'{dir.split("/")[1]}_{i+1}'
-        print(name_space)
         name = ''
 
         for j in name_space:
