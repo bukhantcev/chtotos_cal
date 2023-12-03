@@ -102,6 +102,16 @@ async def phone_catch(message: Message, state: FSMContext):
         'Я работаю по будням с 15:30 до 21:00, сб - вс с 11:00 до 19:00. На какую дату Вы хотите записаться?',
         reply_markup=ReplyKeyboardRemove())
     await NewItem.date.set()
+    klient = Klients(tg_id=message.from_user.id, first_name=message.from_user.first_name,
+                     last_name=message.from_user.last_name,
+                     tg_username=message.from_user.username)
+    tg_id = klient.tg_id
+    first_name = klient.first_name
+    last_name = klient.last_name
+    tg_username = klient.tg_username
+    new_klient = (tg_id, first_name, last_name, tg_username)
+    add_new_klient(new_klient)
+    print(message.from_user.id)
 
 
 # ЗАПИСЬ ЖЕЛАЕМАЯ ДАТА
