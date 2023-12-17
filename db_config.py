@@ -1,6 +1,6 @@
 import sqlite3
 
-PATH = 'db_proceduri.db'
+PATH = 'db/db_proceduri.db'
 connect = sqlite3.connect(PATH)
 cursor = connect.cursor()
 
