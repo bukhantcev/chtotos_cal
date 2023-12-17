@@ -10,15 +10,15 @@ from aiogram.dispatcher import FSMContext
 from loader import memory
 
 
-@dp.callback_query_handler(text='zapis', state=None)
-async def zapros_phone(cb: CallbackQuery):
-    await bot.send_message(chat_id=cb.from_user.id, text='Пришли номер')
-    await NewItem.phone.set()
-
-
-@dp.message_handler(state=NewItem.phone)
-async def phone_catch(message: Message, state: FSMContext):
-    await state.update_data(message.text)
-    data = await state.get_data()
-    print(data)
-    await state.finish()
+# @dp.callback_query_handler(text='zapis', state=None)
+# async def zapros_phone(cb: CallbackQuery):
+#     await bot.send_message(chat_id=cb.from_user.id, text='Пришли номер')
+#     await NewItem.phone.set()
+#
+#
+# @dp.message_handler(state=NewItem.phone)
+# async def phone_catch(message: Message, state: FSMContext):
+#     await state.update_data(message.text)
+#     data = await state.get_data()
+#     print(data)
+#     await state.finish()
